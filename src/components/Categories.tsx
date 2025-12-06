@@ -50,7 +50,7 @@ const categories = [
         </defs>
       </svg>
     ),
-    label: "Layouts",
+    label: "Land Registration",
   },
   {
     icon: (
@@ -120,6 +120,18 @@ export default function Categories() {
             if (cat.label === "Buy / Sell Plots") {
               return (
                 <Link href="/explore-plot" key={index} className="block h-full">
+                  {Content}
+                </Link>
+              );
+            }
+
+            if (cat.label === "Land Registration") {
+              return (
+                <Link
+                  href="/land-registration"
+                  key={index}
+                  className="block h-full"
+                >
                   {Content}
                 </Link>
               );

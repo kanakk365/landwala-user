@@ -108,28 +108,32 @@ export default function LoanEligibilityForm() {
             <label className="block text-gray-700 font-medium mb-4">
               Loan Tenure
             </label>
-            <div className="relative h-16 bg-gray-200 rounded-xl px-4 flex items-center">
+            <div className="relative bg-gray-200 rounded-xl px-4 py-8">
               {/* Range Slider Track & Thumb visual - Simplified using standard input for functionality ideally but styling to match image */}
-              <div className="w-full relative pt-6">
+              <div className="w-full relative">
                 <style jsx>{`
                   input[type="range"]::-webkit-slider-thumb {
                     -webkit-appearance: none;
+                    background: #1d2567;
                     height: 20px;
                     width: 20px;
                     border-radius: 50%;
-                    background: #1d2567;
                     cursor: pointer;
-                    margin-top: -8px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+                    margin-top: -8px; 
                   }
                   input[type="range"]::-moz-range-thumb {
+                    background: #1d2567;
                     height: 20px;
                     width: 20px;
                     border-radius: 50%;
-                    background: #1d2567;
                     cursor: pointer;
+                    border: none;
+                  }
+                  input[type="range"]::-webkit-slider-runnable-track {
+                    background: transparent;
                   }
                 `}</style>
-                <div className="flex justify-between text-sm font-bold text-black mb-2 absolute top-0 w-full px-1">
+                <div className="flex justify-between text-sm font-bold text-black mb-4 w-full px-1">
                   <span>0 years</span>
                   <span>50 years</span>
                 </div>
@@ -146,25 +150,14 @@ export default function LoanEligibilityForm() {
                     max="50"
                     value={tenure}
                     onChange={(e) => setTenure(Number(e.target.value))}
-                    className="absolute top-0 left-0 w-full h-1 opacity-0 cursor-pointer z-10"
+                    className="absolute top-0 left-0 w-full h-1 opacity-100 cursor-pointer z-10"
                     style={{
-                      // For browsers that support it, standard appearance override is needed usually,
-                      // but opacity-0 + custom thumbs via another div is complex.
-                      // Let's use standard input with accent color or custom classes if possible,
-                      // but 'accent-color' is easy.
-                      opacity: 1,
                       background: "transparent",
                       WebkitAppearance: "none",
                     }}
                   />
-                  {/* Since we are using standard range input with transparent background and custom thumb styles above, 
-                      we don't need independent divs for thumbs unless multi-range. 
-                      User asked for "a slider" seemingly single value based on typical forms. 
-                      Previous image showed two thumbs (start/end?), but context suggests "Loan Tenure" is usually a single number (e.g. 20 years).
-                      I will implement a single value slider which is standard for tenure.
-                  */}
                 </div>
-                <div className="text-center mt-2 font-semibold text-[#1d2567]">
+                <div className="text-center mt-4 font-semibold text-[#1d2567] text-lg">
                   {tenure} Years
                 </div>
               </div>

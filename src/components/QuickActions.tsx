@@ -141,6 +141,22 @@ export default function QuickActions() {
               );
             }
 
+            if (action.label === "Latest Listings") {
+              return (
+                <Link href="/latest-listings" key={index}>
+                  {Content}
+                </Link>
+              );
+            }
+
+            if (action.label === "Legal Verification") {
+              return (
+                <Link href="/legal-verification" key={index}>
+                  {Content}
+                </Link>
+              );
+            }
+
             return <div key={index}>{Content}</div>;
           })}
         </div>

@@ -39,7 +39,7 @@ export default function ExploreHero() {
         </p>
 
         {/* Search Bar */}
-        <div className="w-full max-w-2xl bg-white rounded-full flex items-center px-6 py-4 mb-6 shadow-xl">
+        <div className="w-full max-w-2xl bg-white rounded-lg flex items-center px-6 py-4 mb-6 shadow-xl">
           <MapPin className="text-[#1d2567] w-6 h-6 mr-3" />
           <input
             type="text"
@@ -51,7 +51,7 @@ export default function ExploreHero() {
 
         {/* Filters */}
         <div className="flex flex-wrap justify-center gap-4 mb-8">
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/20 hover:bg-white/20 transition-colors">
+          <button className="flex items-center gap-2 px-6 py-2.5 bg-white/10 backdrop-blur-md rounded-lg text-white border border-white/20 hover:bg-white/20 transition-colors">
             <span className="w-4 h-4 bg-white/70 mask mask-image-source" />{" "}
             {/* Placeholder for Plot icon */}
             <svg
@@ -74,23 +74,21 @@ export default function ExploreHero() {
             <ChevronDown className="w-4 h-4 ml-1 opacity-70" />
           </button>
 
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/20 hover:bg-white/20 transition-colors">
+          <button className="flex items-center gap-2 px-6 py-2.5 bg-white/10 backdrop-blur-md rounded-lg text-white border border-white/20 hover:bg-white/20 transition-colors">
             <span className="text-white font-serif italic text-sm">₹</span>
             <span className="text-sm font-medium">Min - Max range</span>
             <ChevronDown className="w-4 h-4 ml-1 opacity-70" />
           </button>
 
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/20 hover:bg-white/20 transition-colors">
+          <button className="flex items-center gap-2 px-6 py-2.5 bg-white/10 backdrop-blur-md rounded-lg text-white border border-white/20 hover:bg-white/20 transition-colors">
             <SlidersHorizontal className="w-4 h-4" />
             <span className="text-sm font-medium">Category</span>
             <ChevronDown className="w-4 h-4 ml-1 opacity-70" />
           </button>
         </div>
 
-        {/* List Property Button */}
-        {/* List Property Button */}
         <Link href="/list-property">
-          <button className="bg-[#2D336B] hover:bg-[#1f2455] text-white px-10 py-3 rounded-lg font-medium shadow-lg transition-colors border border-white/10">
+          <button className="bg-[#1D2567] hover:bg-[#1f2455] text-white px-10 py-3 rounded-lg font-medium shadow-lg transition-colors border border-white/10">
             List your Property
           </button>
         </Link>

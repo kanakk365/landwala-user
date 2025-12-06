@@ -20,13 +20,13 @@ export default function PropertyResultCard({
   property: PropertyProps;
 }) {
   return (
-    <div className="flex flex-col md:flex-row bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100">
+    <div className="flex flex-col md:flex-row bg-white rounded-xl overflow-hidden transition-shadow duration-300 border border-gray-100">
       {/* Image Section */}
       <Link
-        href="/property-details"
-        className="md:w-2/5 relative h-64 md:h-auto block"
+        href="/search-result-detail"
+        className="md:w-2/5 relative rounded-xl h-64 md:h-auto block"
       >
-        <div className="relative w-full h-full">
+        <div className="relative rounded-xl w-full h-full overflow-hidden">
           <Image
             src={property.image}
             alt={property.location}
@@ -34,7 +34,6 @@ export default function PropertyResultCard({
             className="object-cover"
           />
         </div>
-        {/* Gradient overlay if needed for text readability on image, but design shows clean image */}
       </Link>
 
       {/* Content Section */}
