@@ -1,3 +1,4 @@
+import Link from "next/link";
 const actions = [
   {
     icon: (
@@ -118,21 +119,30 @@ export default function QuickActions() {
           Quick Actions
         </h2>
         <div className="flex flex-wrap justify-center gap-12 sm:gap-24">
-          {actions.map((action, index) => (
-            <div
-              key={index}
-              className="flex flex-col items-center gap-4 group cursor-pointer"
-            >
-              <div
-                className={`w-20 h-20 rounded-full ${action.bg} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}
-              >
-                {action.icon}
+          {actions.map((action, index) => {
+            const Content = (
+              <div className="flex flex-col items-center gap-4 group cursor-pointer h-full">
+                <div
+                  className={`w-20 h-20 rounded-full ${action.bg} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}
+                >
+                  {action.icon}
+                </div>
+                <span className="text-gray-600 font-medium text-sm md:text-base">
+                  {action.label}
+                </span>
               </div>
-              <span className="text-gray-600 font-medium text-sm md:text-base">
-                {action.label}
-              </span>
-            </div>
-          ))}
+            );
+
+            if (action.label === "Loan Eligibility") {
+              return (
+                <Link href="/loan-eligibility" key={index}>
+                  {Content}
+                </Link>
+              );
+            }
+
+            return <div key={index}>{Content}</div>;
+          })}
         </div>
       </div>
     </section>

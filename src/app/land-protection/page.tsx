@@ -112,9 +112,11 @@ export default function LandProtectionPage() {
             </div>
           </div>
 
-          <button className="w-full bg-[#1d2567] text-white font-semibold text-lg py-4 rounded-xl shadow-lg hover:opacity-90 transition-opacity">
-            Continue
-          </button>
+          <Link href="/land-protection-quote" className="w-full">
+            <button className="w-full bg-[#1d2567] text-white font-semibold text-lg py-4 rounded-xl shadow-lg hover:opacity-90 transition-opacity">
+              Continue
+            </button>
+          </Link>
         </div>
       </div>
 
