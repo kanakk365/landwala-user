@@ -176,8 +176,7 @@ export default function ProfilePage() {
           loanApplications.map((app) =>
             renderRequestCard(
               `${app.loanPurpose} Loan Application`,
-              `Amount: ₹${app.desiredAmount?.toLocaleString()} . ${
-                app.loanTenureYears
+              `Amount: ₹${app.desiredAmount?.toLocaleString()} . ${app.loanTenureYears
               } Years`,
               `Status: ${app.status}`,
               app.id
@@ -219,11 +218,10 @@ export default function ProfilePage() {
                 <button
                   key={item.label}
                   onClick={() => setActiveTab(item.label)}
-                  className={`w-full flex items-center gap-3 px-6 py-4 text-sm font-medium transition-colors relative ${
-                    activeTab === item.label
+                  className={`w-full flex items-center gap-3 px-6 py-4 text-sm font-medium transition-colors relative ${activeTab === item.label
                       ? "text-gray-900 bg-gray-50"
                       : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   {activeTab === item.label && (
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1d2567]"></div>
@@ -349,11 +347,10 @@ export default function ProfilePage() {
                     <button
                       key={tab}
                       onClick={() => setSubTab(tab)}
-                      className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors relative ${
-                        subTab === tab
+                      className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors relative ${subTab === tab
                           ? "text-[#1d2567]"
                           : "text-gray-500 hover:text-gray-700"
-                      }`}
+                        }`}
                     >
                       {tab}
                       {subTab === tab && (
