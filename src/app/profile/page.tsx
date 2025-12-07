@@ -16,15 +16,31 @@ import {
   MapPin,
   Loader2,
 } from "lucide-react";
-import { landRegistrationApi, LandRegistrationEnquiry } from "@/lib/api";
+import {
+  landRegistrationApi,
+  LandRegistrationEnquiry,
+  landProtectionApi,
+  LandProtectionRequest,
+  loanApi,
+  LoanApplicationResponse,
+} from "@/lib/api";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState("Edit Profile");
+  const [subTab, setSubTab] = useState("Land protection");
+
+  // Data states
   const [enquiries, setEnquiries] = useState<LandRegistrationEnquiry[]>([]);
-  const [loadingEnquiries, setLoadingEnquiries] = useState(false);
+  const [protectionRequests, setProtectionRequests] = useState<
+    LandProtectionRequest[]
+  >([]);
+  const [loanApplications, setLoanApplications] = useState<
+    LoanApplicationResponse[]
+  >([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -37,22 +53,32 @@ export default function ProfilePage() {
   }, [mounted, isAuthenticated, router]);
 
   useEffect(() => {
-    const fetchEnquiries = async () => {
+    const fetchData = async () => {
       if (activeTab === "My Requests" && isAuthenticated) {
+        setLoading(true);
         try {
-          setLoadingEnquiries(true);
-          const data = await landRegistrationApi.getEnquiries();
-          setEnquiries(data.enquiries || []);
+          // Fetch based on subTab
+          if (subTab === "Land protection") {
+            const data = await landProtectionApi.getRequests();
+            setProtectionRequests(data.requests || []);
+          } else if (subTab === "Land Registration") {
+            const data = await landRegistrationApi.getEnquiries();
+            setEnquiries(data.enquiries || []);
+          } else if (subTab === "Loan Eligibility") {
+            const data = await loanApi.getApplications();
+            setLoanApplications(data.applications || []);
+          }
+          // Add other fetches here as needed
         } catch (err) {
-          console.error("Failed to fetch enquiries", err);
+          console.error(`Failed to fetch data for ${subTab}`, err);
         } finally {
-          setLoadingEnquiries(false);
+          setLoading(false);
         }
       }
     };
 
-    fetchEnquiries();
-  }, [activeTab, isAuthenticated]);
+    fetchData();
+  }, [activeTab, subTab, isAuthenticated]);
 
   const handleLogout = () => {
     logout();
@@ -68,21 +94,116 @@ export default function ProfilePage() {
     { icon: AlertCircle, label: "Report a Bug" },
   ];
 
+  const requestTabs = [
+    "Land protection",
+    "Layouts",
+    "Land Registration",
+    "Loan Eligibility",
+    "Plot Enquiry",
+    "My Documents",
+  ];
+
   if (!mounted || !isAuthenticated || !user) {
     return null;
   }
+
+  const renderRequestCard = (
+    title: string,
+    subtitle: string,
+    footerText: string,
+    id: string
+  ) => (
+    <div
+      key={id}
+      className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow mb-4"
+    >
+      <div className="mb-4">
+        <h4 className="text-base font-semibold text-gray-900">{title}</h4>
+        <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+      </div>
+
+      <div className="border-t border-gray-100 my-4"></div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <span className="text-sm text-gray-600 font-medium">{footerText}</span>
+        <button className="bg-[#1d2567] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#151b4d] transition-colors w-full sm:w-auto">
+          View Detail
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#1d2567]" />
+        </div>
+      );
+    }
+
+    switch (subTab) {
+      case "Land protection":
+        return protectionRequests.length > 0 ? (
+          protectionRequests.map((req) =>
+            renderRequestCard(
+              req.landLocation || "Land Protection Request",
+              `${req.landArea || "N/A"} . ${req.id.substring(0, 8)}`,
+              `Submitted On ${new Date(req.createdAt).toLocaleDateString()}`,
+              req.id
+            )
+          )
+        ) : (
+          <EmptyState message="No land protection requests found" />
+        );
+
+      case "Land Registration":
+        return enquiries.length > 0 ? (
+          enquiries.map((enq) =>
+            renderRequestCard(
+              enq.propertyTitle || "Land Registration Enquiry",
+              `Ref: ${enq.id.substring(0, 8)}`,
+              `Submitted On ${new Date(enq.createdAt).toLocaleDateString()}`,
+              enq.id
+            )
+          )
+        ) : (
+          <EmptyState message="No land registration enquiries found" />
+        );
+
+      case "Loan Eligibility":
+        return loanApplications.length > 0 ? (
+          loanApplications.map((app) =>
+            renderRequestCard(
+              `${app.loanPurpose} Loan Application`,
+              `Amount: ₹${app.desiredAmount?.toLocaleString()} . ${
+                app.loanTenureYears
+              } Years`,
+              `Status: ${app.status}`,
+              app.id
+            )
+          )
+        ) : (
+          <EmptyState message="No loan applications found" />
+        );
+
+      default:
+        return <EmptyState message={`${subTab} requests coming soon`} />;
+    }
+  };
+
+  const EmptyState = ({ message }: { message: string }) => (
+    <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+      <FileText className="w-16 h-16 mb-4 opacity-50" />
+      <p className="text-lg font-medium">{message}</p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Header />
 
       <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">My Profile</h1>
-          <p className="text-gray-500">
-            Get in Touch for Land Registration Assistance
-          </p>
-        </div>
 
         <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
           {/* Sidebar */}
@@ -222,61 +343,28 @@ export default function ProfilePage() {
 
             {activeTab === "My Requests" && (
               <div className="w-full">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">
-                  My Requests
-                </h3>
+                {/* Sub-tabs Navigation */}
+                <div className="flex overflow-x-auto border-b border-gray-200 mb-6 no-scrollbar">
+                  {requestTabs.map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setSubTab(tab)}
+                      className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors relative ${
+                        subTab === tab
+                          ? "text-[#1d2567]"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      {tab}
+                      {subTab === tab && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1d2567]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
 
-                {loadingEnquiries ? (
-                  <div className="flex justify-center items-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#1d2567]" />
-                  </div>
-                ) : enquiries.length > 0 ? (
-                  <div className="space-y-4">
-                    {enquiries.map((enquiry) => (
-                      <div
-                        key={enquiry.id}
-                        className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:shadow-sm transition-shadow"
-                      >
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                          <div>
-                            <h4 className="font-semibold text-gray-900">
-                              {enquiry.propertyTitle ||
-                                `Property #${enquiry.propertyId}`}
-                            </h4>
-                            <p className="text-sm text-gray-500 mt-1">
-                              Submitted on{" "}
-                              {new Date(enquiry.createdAt).toLocaleDateString()}
-                            </p>
-                            {enquiry.message && (
-                              <p className="text-sm text-gray-600 mt-2">
-                                {enquiry.message}
-                              </p>
-                            )}
-                          </div>
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold self-start ${
-                              enquiry.status === "APPROVED"
-                                ? "bg-green-100 text-green-700"
-                                : enquiry.status === "REJECTED"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}
-                          >
-                            {enquiry.status || "PENDING"}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                    <FileText className="w-16 h-16 mb-4 opacity-50" />
-                    <p className="text-lg font-medium">No requests yet</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Your land registration enquiries will appear here
-                    </p>
-                  </div>
-                )}
+                {/* Content Area */}
+                <div className="space-y-4">{renderContent()}</div>
               </div>
             )}
 
