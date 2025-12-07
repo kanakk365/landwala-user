@@ -1,12 +1,87 @@
 "use client";
 
-import { ChevronDown, Flag } from "lucide-react";
-import Image from "next/image";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { useState } from "react";
-import Link from "next/link";
+import { landRegistrationApi, LandRegistrationSubmitData } from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
+import SuccessModal from "@/components/SuccessModal";
 
 export default function LandRegistrationForm() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    countryCode: "+91",
+    email: "",
+    location: "",
+    plotType: "",
+    message: "",
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleNextStep = () => {
+    if (!formData.name || !formData.phone || !formData.email) {
+      setError("Please fill in all required fields");
+      return;
+    }
+    setError("");
+    setStep(2);
+  };
+
+  const handleSubmit = async () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    if (!formData.location || !formData.plotType) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const submitData: LandRegistrationSubmitData = {
+        name: formData.name,
+        phone: formData.phone,
+        countryCode: formData.countryCode,
+        email: formData.email,
+        location: formData.location,
+        plotType: formData.plotType,
+        message: formData.message || undefined,
+      };
+
+      await landRegistrationApi.submit(submitData);
+      setShowSuccess(true);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to submit. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowSuccess(false);
+    router.push("/");
+  };
 
   return (
     <div className="max-w-xl mx-auto mb-20">
@@ -65,11 +140,20 @@ export default function LandRegistrationForm() {
             </div>
           </div>
 
+          {error && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm text-center">
+              {error}
+            </div>
+          )}
+
           {step === 1 && (
             <div className="space-y-6">
               {/* Full Name */}
               <input
                 type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
                 placeholder="Full Name"
                 className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
               />
@@ -77,7 +161,6 @@ export default function LandRegistrationForm() {
               {/* Mobile Number */}
               <div className="flex w-full border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#2D336B] transition-colors bg-white">
                 <div className="flex items-center px-4 border-r border-gray-200 gap-2 bg-gray-50/10">
-                  {/* Simplified Flag Icon Placeholder */}
                   <div className="w-6 h-4 relative rounded-sm overflow-hidden bg-gray-100 flex flex-col">
                     <div className="bg-[#FF9933] h-1/3 w-full"></div>
                     <div className="bg-white h-1/3 w-full flex items-center justify-center">
@@ -89,6 +172,9 @@ export default function LandRegistrationForm() {
                 </div>
                 <input
                   type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   placeholder="Enter your mobile number"
                   className="flex-1 px-5 py-4 text-gray-700 outline-none font-normal"
                 />
@@ -97,12 +183,15 @@ export default function LandRegistrationForm() {
               {/* Email Id */}
               <input
                 type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="E mail Id"
                 className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
               />
 
               <button
-                onClick={() => setStep(2)}
+                onClick={handleNextStep}
                 className="w-full bg-[#2D336B] text-white font-semibold py-4 rounded-xl shadow-lg hover:bg-[#1f2455] transition-colors text-lg mt-8"
               >
                 Next
@@ -115,47 +204,67 @@ export default function LandRegistrationForm() {
               {/* Location */}
               <input
                 type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
                 placeholder="Location"
-                className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
-              />
-
-              {/* Area of the Land */}
-              <input
-                type="text"
-                placeholder="Area of the Land"
                 className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
               />
 
               {/* Type of Plot */}
               <div className="relative">
-                <select className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white appearance-none cursor-pointer">
-                  <option value="" disabled selected>
+                <select
+                  name="plotType"
+                  value={formData.plotType}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>
                     Type of Plot
                   </option>
-                  <option value="residential">Residential</option>
-                  <option value="commercial">Commercial</option>
-                  <option value="industrial">Industrial</option>
-                  <option value="agricultural">Agricultural</option>
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Agricultural">Agricultural</option>
                 </select>
                 <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               </div>
 
-              {/* Email Id (as per image, likely redundant or meant to be Pincode, keeping as Email to match design strictness) or maybe user made specific requirement */}
-              <input
-                type="email" // Keeping type email to match label
-                placeholder="E mail Id"
-                className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
+              {/* Message */}
+              <textarea
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                placeholder="Additional message (optional)"
+                rows={3}
+                className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal resize-none"
               />
 
-              <Link href="/quote-success" className="block w-full mt-8">
-                <button className="w-full bg-[#2D336B] text-white font-semibold py-4 rounded-xl shadow-lg hover:bg-[#1f2455] transition-colors text-lg">
-                  Submit Enquiry
-                </button>
-              </Link>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full bg-[#2D336B] hover:bg-[#1f2455] disabled:bg-gray-400 text-white font-semibold py-4 rounded-xl shadow-lg transition-colors text-lg flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Enquiry"
+                )}
+              </button>
             </div>
           )}
         </div>
       </section>
+
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={handleModalClose}
+        title="Your Request has been Sent"
+        message="We will notify you once the Admin accepts your request"
+      />
     </div>
   );
 }

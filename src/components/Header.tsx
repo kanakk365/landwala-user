@@ -1,7 +1,19 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useAuthStore } from "@/store/authStore";
+import { Bell, UserCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Header() {
+  const { isAuthenticated, user } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-gray-100">
       <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
@@ -35,18 +47,6 @@ export default function Header() {
             Properties
           </Link>
           <Link
-            href="/services"
-            className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
-          >
-            Services
-          </Link>
-          <Link
-            href="/plots"
-            className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
-          >
-            Plots
-          </Link>
-          <Link
             href="/about"
             className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
           >
@@ -67,19 +67,36 @@ export default function Header() {
         </nav>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-4">
-          <Link
-            href="/login"
-            className="text-BASE font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
-          >
-            Log In
-          </Link>
-          <Link
-            href="/signup"
-            className="px-5 py-1 text-BASE font-medium text-[#1d2567] border-2 border-[#1d2567] rounded-lg hover:bg-[#1d2567] hover:text-white transition-colors"
-          >
-            Sign Up Now
-          </Link>
+        <div className="flex items-center gap-6">
+          {mounted && isAuthenticated ? (
+            <>
+              <button className="text-[#1d2567] hover:text-[#f7ae49] transition-colors relative">
+                <Bell className="w-7 h-7" />
+                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+              </button>
+              <Link
+                href="/profile"
+                className="text-[#1d2567] hover:text-[#f7ae49] transition-colors"
+              >
+                <UserCircle className="w-8 h-8" />
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-BASE font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/signup"
+                className="px-5 py-1 text-BASE font-medium text-[#1d2567] border-2 border-[#1d2567] rounded-lg hover:bg-[#1d2567] hover:text-white transition-colors"
+              >
+                Sign Up Now
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

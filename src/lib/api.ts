@@ -11,7 +11,6 @@ const api = axios.create({
   },
 });
 
-// Request interceptor - adds auth token to requests
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const tokens = useAuthStore.getState().tokens;
@@ -25,16 +24,13 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - handles 401 errors and logs out
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Clear auth state and redirect to login
       const logout = useAuthStore.getState().logout;
       logout();
 
-      // Redirect to login page (only in browser)
       if (typeof window !== "undefined") {
         window.location.href = "/login";
       }
@@ -45,7 +41,6 @@ api.interceptors.response.use(
 
 export default api;
 
-// Types for API responses
 interface GoogleAuthResponse {
   user: {
     id: string;
@@ -75,15 +70,55 @@ interface RegisterResponse {
   message?: string;
 }
 
-// Auth API functions
+export interface LoanApplicationData {
+  fullName: string;
+  monthlyIncome: string;
+  employmentType: string;
+  loanPurpose: string;
+  desiredAmount: string;
+  loanTenureYears: string;
+  documents: File[];
+}
+
+export interface LoanDocument {
+  id: string;
+  documentType: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  createdAt: string;
+}
+
+export interface LoanApplicationResponse {
+  id: string;
+  fullName: string;
+  monthlyIncome: number;
+  employmentType: string;
+  loanPurpose: string;
+  desiredAmount: number;
+  loanTenureYears: number;
+  status: string;
+  remarks?: string | null;
+  documents: LoanDocument[];
+  createdAt: string;
+  updatedAt: string;
+  submittedAt?: string;
+}
+
+export interface LoanApplicationsListResponse {
+  applications: LoanApplicationResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export const authApi = {
-  // Google sign-in - sends Firebase idToken to backend
   googleAuth: async (idToken: string): Promise<GoogleAuthResponse> => {
     const response = await api.post("/auth/google", { idToken });
     return response.data;
   },
 
-  // Register user profile after authentication
   register: async (userData: {
     fullName: string;
     phoneNumber: string;
@@ -95,9 +130,209 @@ export const authApi = {
     return response.data;
   },
 
-  // Get current user profile
   getProfile: async () => {
     const response = await api.get("/auth/profile");
+    return response.data;
+  },
+};
+
+export const loanApi = {
+  apply: async (
+    data: LoanApplicationData
+  ): Promise<LoanApplicationResponse> => {
+    const formData = new FormData();
+    formData.append("fullName", data.fullName);
+    formData.append("monthlyIncome", data.monthlyIncome.toString());
+    formData.append("employmentType", data.employmentType);
+    formData.append("loanPurpose", data.loanPurpose);
+    formData.append("desiredAmount", data.desiredAmount.toString());
+    formData.append("loanTenureYears", data.loanTenureYears.toString());
+
+    if (data.documents && data.documents.length > 0) {
+      data.documents.forEach((file) => {
+        formData.append("documents", file);
+      });
+    }
+
+    const response = await api.post("/loan/apply", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  getApplications: async (): Promise<LoanApplicationsListResponse> => {
+    const response = await api.get("/loan/applications");
+    return response.data;
+  },
+
+  getApplicationById: async (id: string): Promise<LoanApplicationResponse> => {
+    const response = await api.get(`/loan/applications/${id}`);
+    return response.data;
+  },
+};
+
+export interface LegalVerificationData {
+  titleDeed: File | null;
+  saleAgreement: File | null;
+  taxReceipt: File | null;
+  encumbranceCertificate: File | null;
+}
+
+export interface LegalVerificationDocument {
+  id: string;
+  documentType: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  createdAt: string;
+}
+
+export interface LegalVerificationResponse {
+  id: string;
+  status: string;
+  remarks?: string | null;
+  titleDeed?: LegalVerificationDocument | null;
+  saleAgreement?: LegalVerificationDocument | null;
+  taxReceipt?: LegalVerificationDocument | null;
+  encumbranceCertificate?: LegalVerificationDocument | null;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt?: string;
+}
+
+export interface LegalVerificationListResponse {
+  applications: LegalVerificationResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const legalVerificationApi = {
+  apply: async (
+    data: LegalVerificationData
+  ): Promise<LegalVerificationResponse> => {
+    const formData = new FormData();
+
+    if (data.titleDeed) {
+      formData.append("titleDeed", data.titleDeed);
+    }
+    if (data.saleAgreement) {
+      formData.append("saleAgreement", data.saleAgreement);
+    }
+    if (data.taxReceipt) {
+      formData.append("taxReceipt", data.taxReceipt);
+    }
+    if (data.encumbranceCertificate) {
+      formData.append("encumbranceCertificate", data.encumbranceCertificate);
+    }
+
+    const response = await api.post("/legal-verification/apply", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  getApplications: async (): Promise<LegalVerificationListResponse> => {
+    const response = await api.get("/legal-verification/applications");
+    return response.data;
+  },
+
+  getApplicationById: async (
+    id: string
+  ): Promise<LegalVerificationResponse> => {
+    const response = await api.get(`/legal-verification/applications/${id}`);
+    return response.data;
+  },
+};
+
+export interface LandRegistrationEnquiry {
+  id: string;
+  propertyId: string;
+  propertyTitle?: string;
+  status: string;
+  message?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LandRegistrationEnquiriesResponse {
+  enquiries: LandRegistrationEnquiry[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface LandRegistrationSubmitData {
+  name: string;
+  phone: string;
+  countryCode: string;
+  email: string;
+  location: string;
+  plotType: string;
+  message?: string;
+}
+
+export const landRegistrationApi = {
+  submit: async (
+    data: LandRegistrationSubmitData
+  ): Promise<LandRegistrationEnquiry> => {
+    const response = await api.post("/land-registration/submit", data);
+    return response.data;
+  },
+
+  getEnquiries: async (): Promise<LandRegistrationEnquiriesResponse> => {
+    const response = await api.get("/land-registration/enquiries");
+    return response.data;
+  },
+};
+
+// Land Protection API Types
+export interface LandProtectionRequestData {
+  fullName: string;
+  phone: string;
+  countryCode: string;
+  landLocation: string;
+  landArea: string;
+  location: string;
+  pincode: string;
+}
+
+export interface LandProtectionRequest {
+  id: string;
+  fullName: string;
+  phone: string;
+  countryCode: string;
+  landLocation: string;
+  landArea: string;
+  location: string;
+  pincode: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LandProtectionRequestsResponse {
+  requests: LandProtectionRequest[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const landProtectionApi = {
+  requestQuote: async (
+    data: LandProtectionRequestData
+  ): Promise<LandProtectionRequest> => {
+    const response = await api.post("/land-protection/request-quote", data);
+    return response.data;
+  },
+
+  getRequests: async (): Promise<LandProtectionRequestsResponse> => {
+    const response = await api.get("/land-protection/requests");
     return response.data;
   },
 };

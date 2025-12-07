@@ -1,10 +1,81 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { landProtectionApi, LandProtectionRequestData } from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
+import SuccessModal from "@/components/SuccessModal";
 
 export default function LandProtectionForm() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    countryCode: "+91",
+    landLocation: "",
+    landArea: "",
+    location: "",
+    pincode: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    if (
+      !formData.fullName ||
+      !formData.phone ||
+      !formData.landLocation ||
+      !formData.landArea ||
+      !formData.location ||
+      !formData.pincode
+    ) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const submitData: LandProtectionRequestData = {
+        fullName: formData.fullName,
+        phone: formData.phone,
+        countryCode: formData.countryCode,
+        landLocation: formData.landLocation,
+        landArea: formData.landArea,
+        location: formData.location,
+        pincode: formData.pincode,
+      };
+
+      await landProtectionApi.requestQuote(submitData);
+      setShowSuccess(true);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to submit. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowSuccess(false);
+    router.push("/");
+  };
+
   return (
     <div className="max-w-xl mx-auto mb-20">
       {/* Header - Outside the box */}
@@ -27,72 +98,42 @@ export default function LandProtectionForm() {
               Enter your details here to register
             </p>
 
+            {error && (
+              <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm text-center">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-5">
               {/* Full name */}
               <input
                 type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
                 placeholder="Full name"
-                className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
-              />
-
-              {/* Location (User) */}
-              <input
-                type="text"
-                placeholder="Location"
                 className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
               />
 
               {/* Mobile Number with Country Code */}
               <div className="flex gap-2">
                 <div className="relative w-24 flex-shrink-0">
-                  <div className="w-full border border-gray-200 rounded-xl px-2 py-4 flex items-center justify-center gap-1 bg-white cursor-pointer hover:border-[#2D336B] transition-colors">
-                    {/* Placeholder generic flag or just circle */}
-                    <div className="w-6 h-6 rounded-full overflow-hidden relative border border-gray-200">
-                      {/* Assuming Indian flag as per common context or generic */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 480"
-                        className="w-full h-full object-cover"
-                      >
-                        <g fillRule="evenodd">
-                          <path fill="#f93" d="M0 0h640v160H0z" />
-                          <path fill="#fff" d="M0 160h640v160H0z" />
-                          <path fill="#128807" d="M0 320h640v160H0z" />
-                          <g transform="translate(320 240) scale(6.4)">
-                            <circle r="12" fill="#008" />
-                            <circle r="10" fill="#fff" />
-                            <circle r="2" fill="#008" />
-                            <g id="d">
-                              <g id="c">
-                                <g id="b">
-                                  <g id="a">
-                                    <circle
-                                      r="1"
-                                      transform="rotate(7.5 -8.76 47.906)"
-                                      fill="#008"
-                                    />
-                                    <path
-                                      fill="#008"
-                                      d="M0-12v12h.5z"
-                                      transform="rotate(15 0 -12)"
-                                    />
-                                  </g>
-                                  <use href="#a" transform="rotate(30)" />
-                                </g>
-                                <use href="#b" transform="rotate(60)" />
-                              </g>
-                              <use href="#c" transform="rotate(120)" />
-                            </g>
-                            <use href="#d" transform="rotate(180)" />
-                          </g>
-                        </g>
-                      </svg>
+                  <div className="w-full border border-gray-200 rounded-xl px-2 py-4 flex items-center justify-center gap-1 bg-white">
+                    <div className="w-6 h-4 rounded-sm overflow-hidden relative flex flex-col">
+                      <div className="bg-[#FF9933] h-1/3 w-full"></div>
+                      <div className="bg-white h-1/3 w-full flex items-center justify-center">
+                        <div className="w-1 h-1 bg-blue-800 rounded-full"></div>
+                      </div>
+                      <div className="bg-[#138808] h-1/3 w-full"></div>
                     </div>
                     <ChevronDown className="w-4 h-4 text-gray-500" />
                   </div>
                 </div>
                 <input
                   type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   placeholder="Enter your mobile number"
                   className="flex-1 border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
                 />
@@ -101,6 +142,9 @@ export default function LandProtectionForm() {
               {/* Land Location */}
               <input
                 type="text"
+                name="landLocation"
+                value={formData.landLocation}
+                onChange={handleChange}
                 placeholder="Land Location"
                 className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
               />
@@ -108,19 +152,29 @@ export default function LandProtectionForm() {
               {/* Land Area */}
               <input
                 type="text"
+                name="landArea"
+                value={formData.landArea}
+                onChange={handleChange}
                 placeholder="Land Area (sq. ft/acres)"
                 className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
               />
 
-              {/* Pincode (or Location as per screenshot bottom fields) */}
+              {/* Location */}
               <input
                 type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
                 placeholder="Location"
                 className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
               />
 
+              {/* Pincode */}
               <input
                 type="text"
+                name="pincode"
+                value={formData.pincode}
+                onChange={handleChange}
                 placeholder="Pincode"
                 className="w-full border border-gray-200 rounded-xl px-5 py-4 text-gray-700 outline-none focus:border-[#2D336B] transition-colors bg-white font-normal"
               />
@@ -128,13 +182,29 @@ export default function LandProtectionForm() {
           </div>
 
           {/* Submit Button */}
-          <Link href="/quote-success" className="w-full">
-            <button className="w-full bg-[#2D336B] text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-[#1f2455] transition-colors text-lg">
-              Request Quote
-            </button>
-          </Link>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full bg-[#2D336B] hover:bg-[#1f2455] disabled:bg-gray-400 text-white font-semibold py-3 rounded-xl shadow-lg transition-colors text-lg flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Request Quote"
+            )}
+          </button>
         </div>
       </section>
+
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={handleModalClose}
+        title="Your Request has been Sent"
+        message="We will notify you once the Admin accepts your request"
+      />
     </div>
   );
 }
