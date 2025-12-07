@@ -2,9 +2,90 @@
 
 import Header from "@/components/Header";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "@/lib/firebase";
+import { authApi } from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login, isAuthenticated, setLoading, isLoading, user, logout } =
+    useAuthStore();
+
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted flag after hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Redirect if already authenticated (and user is not new)
+  useEffect(() => {
+    if (mounted && isAuthenticated && user && !user.isNewUser) {
+      router.push("/");
+    }
+  }, [mounted, isAuthenticated, user, router]);
+
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      // Sign in with Google using Firebase
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      // Send idToken to backend
+      const response = await authApi.googleAuth(idToken);
+
+      // Store user and tokens in Zustand store
+      login(
+        {
+          id: response.user.id,
+          email: response.user.email,
+          name: response.user.name,
+          profilePicture: response.user.profilePicture,
+          isNewUser: response.user.isNewUser,
+        },
+        {
+          accessToken: response.tokens.accessToken,
+          refreshToken: response.tokens.refreshToken,
+          expiresIn: response.tokens.expiresIn,
+        }
+      );
+
+      // Check if user needs to complete registration
+      if (response.user.isNewUser) {
+        router.push("/signup?complete=true");
+      } else {
+        router.push("/");
+      }
+    } catch (err) {
+      console.error("Google login error:", err);
+      setError("Failed to sign in with Google. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhoneLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!phoneNumber || !otp) {
+      setError("Please enter both phone number and OTP");
+      return;
+    }
+
+    // Phone/OTP login would be implemented here
+    setError("Phone login coming soon. Please use Google login.");
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 font-sans text-gray-900 flex flex-col relative overflow-hidden">
       {/* Top Right Gradient Blob */}
@@ -38,53 +119,84 @@ export default function LoginPage() {
                 <span className="text-[#F7AE49]">Sign in</span> to your Account
               </h2>
 
-              {/* Phone Number */}
-              <div className="mb-6">
-                <label className="block text-gray-500 text-sm mb-2 font-medium">
-                  Phone Number
-                </label>
-                <div className="flex w-full border border-gray-200 rounded-lg overflow-hidden focus-within:border-[#2D336B] transition-colors bg-white">
-                  <div className="flex items-center px-3 border-r border-gray-200 gap-1 bg-gray-50 cursor-pointer">
-                    {/* Russian Flag Placeholder matching image */}
-                    <div className="w-5 h-5 rounded-full overflow-hidden flex flex-col justify-center relative border border-gray-200">
-                      <div className="bg-white h-1/3 w-full"></div>
-                      <div className="bg-blue-600 h-1/3 w-full"></div>
-                      <div className="bg-red-600 h-1/3 w-full"></div>
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handlePhoneLogin}>
+                {/* Phone Number */}
+                <div className="mb-6">
+                  <label className="block text-gray-500 text-sm mb-2 font-medium">
+                    Phone Number
+                  </label>
+                  <div className="flex w-full border border-gray-200 rounded-lg overflow-hidden focus-within:border-[#2D336B] transition-colors bg-white">
+                    <div className="flex items-center px-3 border-r border-gray-200 gap-1 bg-gray-50 cursor-pointer">
+                      {/* Flag Placeholder */}
+                      <div className="w-5 h-5 rounded-full overflow-hidden flex flex-col justify-center relative border border-gray-200">
+                        <div className="bg-white h-1/3 w-full"></div>
+                        <div className="bg-blue-600 h-1/3 w-full"></div>
+                        <div className="bg-red-600 h-1/3 w-full"></div>
+                      </div>
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
                     </div>
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="+234 7789900987"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="flex-1 px-4 py-3 text-gray-700 outline-none font-medium placeholder:text-gray-400"
+                    />
+                  </div>
+                </div>
+
+                {/* OTP Input */}
+                <div className="mb-8">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-gray-500 text-sm font-medium">
+                      Enter OTP
+                    </label>
+                    <button
+                      type="button"
+                      className="text-blue-500 text-sm font-medium hover:text-blue-700"
+                    >
+                      Resend
+                    </button>
                   </div>
                   <input
                     type="text"
-                    placeholder="+234 7789900987"
-                    className="flex-1 px-4 py-3 text-gray-700 outline-none font-medium placeholder:text-gray-400"
+                    placeholder="Enter valid OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-[#2D336B] transition-colors text-gray-700 placeholder:text-gray-400 bg-white"
                   />
                 </div>
-              </div>
 
-              {/* OTP Input */}
-              <div className="mb-8">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-gray-500 text-sm font-medium">
-                    Enter OTP
-                  </label>
-                  <button className="text-blue-500 text-sm font-medium hover:text-blue-700">
-                    Resend
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Enter valid OTP"
-                  className="w-full border border-red-300 rounded-lg px-4 py-3 outline-none focus:border-[#2D336B] transition-colors text-gray-700 placeholder:text-red-200 bg-white"
-                />
-              </div>
-
-              {/* Login Button */}
-              <button className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 rounded-lg shadow-sm transition-colors mb-6">
-                Login
-              </button>
+                {/* Login Button */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg shadow-sm transition-colors mb-6 flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    "Login"
+                  )}
+                </button>
+              </form>
 
               {/* Google Login Only */}
-              <button className="w-full bg-[#dbeafe] hover:bg-blue-100 text-gray-900 font-bold py-3 rounded-lg flex items-center justify-center gap-3 transition-colors mb-8">
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+                className="w-full bg-[#dbeafe] hover:bg-blue-100 disabled:bg-gray-100 text-gray-900 font-bold py-3 rounded-lg flex items-center justify-center gap-3 transition-colors mb-8"
+              >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
