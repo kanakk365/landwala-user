@@ -336,3 +336,96 @@ export const landProtectionApi = {
     return response.data;
   },
 };
+
+// Properties API Types
+export interface PropertyOverviewField {
+  id: string;
+  label: string;
+  value: string;
+  icon: string | null;
+  displayOrder: number;
+}
+
+export interface Property {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  minPrice: number;
+  maxPrice: number;
+  priceUnit: string;
+  priceRange: string;
+  locationAddress: string;
+  city: string;
+  state: string;
+  pincode: string;
+  latitude: number;
+  longitude: number;
+  images: string[];
+  brochureUrl: string;
+  landLayoutTitle: string;
+  landLayoutImageUrl: string;
+  descriptionTitle: string;
+  descriptionContent: string;
+  overviewFields: PropertyOverviewField[];
+  isActive: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PropertiesMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface PropertiesResponse {
+  data: Property[];
+  meta: PropertiesMeta;
+}
+
+export const propertiesApi = {
+  getProperties: async (params?: {
+    page?: number;
+    limit?: number;
+    city?: string;
+    state?: string;
+    isFeatured?: boolean;
+  }): Promise<PropertiesResponse> => {
+    const response = await api.get("/properties", { params });
+    return response.data;
+  },
+
+  getPropertyById: async (id: string): Promise<Property> => {
+    const response = await api.get(`/properties/${id}`);
+    return response.data;
+  },
+};
+
+// Enquiries API Types
+export interface EnquiryData {
+  type: "PROPERTY" | "GENERAL";
+  propertyId?: string;
+  message: string;
+}
+
+export interface EnquiryResponse {
+  id: string;
+  type: string;
+  propertyId?: string;
+  message: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const enquiriesApi = {
+  submit: async (data: EnquiryData): Promise<EnquiryResponse> => {
+    const response = await api.post("/enquiries", data);
+    return response.data;
+  },
+};

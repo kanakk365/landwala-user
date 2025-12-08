@@ -14,7 +14,7 @@ export default function Home() {
       <Categories />
       <PropertiesSection title="Explore Nearby Properties" />
       <QuickActions />
-      <PropertiesSection title="Featured Listings" />
+      <PropertiesSection title="Featured Listings" isFeatured={true} />
       <Contact />
       <Footer />
     </main>
