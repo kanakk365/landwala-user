@@ -429,3 +429,59 @@ export const enquiriesApi = {
     return response.data;
   },
 };
+
+// Layouts API Types
+export interface LayoutSlot {
+  id: string;
+  sectionTitle: string;
+  plotNumber: string;
+  area: string;
+  facing: string;
+  price: number;
+  priceUnit: string;
+  priceFormatted: string;
+  status: "available" | "not_available" | "sold";
+  width: string | null;
+  height: string | null;
+  displayOrder: number;
+}
+
+export interface Layout {
+  id: string;
+  title: string;
+  location: string;
+  minPrice: number;
+  maxPrice: number;
+  priceUnit: string;
+  priceRange: string;
+  imageUrl: string;
+  layoutImageUrl: string;
+  slots: LayoutSlot[];
+  slotsBySection: Record<string, LayoutSlot[]>;
+  totalSlots: number;
+  availableSlots: number;
+  notAvailableSlots: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LayoutsResponse {
+  data: Layout[];
+  meta: PropertiesMeta;
+}
+
+export const layoutsApi = {
+  getLayouts: async (params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<LayoutsResponse> => {
+    const response = await api.get("/layouts", { params });
+    return response.data;
+  },
+
+  getLayoutById: async (id: string): Promise<Layout> => {
+    const response = await api.get(`/layouts/${id}`);
+    return response.data;
+  },
+};
