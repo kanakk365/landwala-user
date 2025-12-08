@@ -485,3 +485,49 @@ export const layoutsApi = {
     return response.data;
   },
 };
+
+// Property Submission API Types
+export interface PropertySubmissionData {
+  title: string;
+  size: string;
+  facing: string;
+  description: string;
+  image: File[];
+  layoutImage: File[];
+}
+
+export interface PropertySubmissionResponse {
+  message: string;
+  data?: any;
+}
+
+export const propertySubmissionApi = {
+  submit: async (
+    data: PropertySubmissionData
+  ): Promise<PropertySubmissionResponse> => {
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("size", data.size);
+    formData.append("facing", data.facing);
+    formData.append("description", data.description);
+
+    if (data.image && data.image.length > 0) {
+      data.image.forEach((file) => {
+        formData.append("image", file);
+      });
+    }
+
+    if (data.layoutImage && data.layoutImage.length > 0) {
+      data.layoutImage.forEach((file) => {
+        formData.append("layoutImage", file);
+      });
+    }
+
+    const response = await api.post("/property-submissions", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+};
