@@ -10,11 +10,9 @@ import { layoutsApi, Layout, LayoutSlot, enquiriesApi } from "@/lib/api";
 import {
     MapPin,
     Loader2,
-    ArrowLeft,
-    Heart,
-    Share2,
     Grid3X3,
-    ChevronRight,
+    Share2,
+    Heart,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -116,7 +114,7 @@ export default function LayoutDetailsPage() {
                     <div className="text-center">
                         <p className="text-gray-500 mb-4">{error || "Layout not found"}</p>
                         <Link
-                            href="/layouts"
+                            href="/layouts/explore"
                             className="px-6 py-2 bg-[#2e3675] text-white rounded-lg hover:bg-[#1d2567] transition-colors"
                         >
                             Back to Layouts
@@ -132,30 +130,14 @@ export default function LayoutDetailsPage() {
         <main className="min-h-screen bg-white font-sans text-gray-900">
             <Header />
 
-            <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
-                {/* Top Navigation */}
-                <div className="flex items-center justify-between mb-6">
-                    <Link
-                        href="/layouts"
-                        className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                        <ArrowLeft className="w-6 h-6 text-gray-700" />
-                    </Link>
-                    <h1 className="text-xl font-bold text-gray-900">Layout Details</h1>
-                    <div className="flex gap-2">
-                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
-                            <Share2 className="w-6 h-6 text-gray-700" />
-                        </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
-                            <Heart className="w-6 h-6 text-gray-700" />
-                        </button>
-                    </div>
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-medium text-black">Layouts</h1>
                 </div>
 
-                {/* Layout Header */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    {/* Layout Preview Image */}
-                    <div className="relative h-[300px] md:h-[400px] rounded-2xl overflow-hidden bg-gray-100">
+                {/* 1. Layout Summary Card */}
+                <div className="bg-white border border-gray-100 rounded-3xl p-3 shadow-sm flex flex-col md:flex-row items-center gap-6 mb-12">
+                    <div className="relative w-full md:w-[450px] h-[280px] rounded-2xl overflow-hidden shrink-0">
                         <Image
                             src={layout.imageUrl}
                             alt={layout.title}
@@ -164,189 +146,190 @@ export default function LayoutDetailsPage() {
                             unoptimized
                         />
                     </div>
-
-                    {/* Layout Map */}
-                    <div className="relative h-[300px] md:h-[400px] rounded-2xl overflow-hidden bg-gray-50 border border-gray-200">
-                        <Image
-                            src={layout.layoutImageUrl}
-                            alt={`${layout.title} Map`}
-                            fill
-                            className="object-contain p-4"
-                            unoptimized
-                        />
-                    </div>
-                </div>
-
-                {/* Layout Info */}
-                <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-8">
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                                {layout.title}
-                            </h2>
-                            <div className="flex items-center text-gray-500">
-                                <MapPin className="w-4 h-4 mr-1" />
-                                {layout.location}
+                    <div className="flex-1 w-full p-4">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                                    {layout.title}
+                                </h2>
+                                <p className="text-gray-500 text-lg mb-8">{layout.location}</p>
+                                <p className="text-black font-bold text-xl">
+                                    Land | {layout.priceRange}
+                                </p>
+                            </div>
+                            <div className="flex gap-2">
+                                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                    <Share2 className="w-6 h-6 text-gray-600" />
+                                </button>
+                                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                    <Heart className="w-6 h-6 text-gray-600" />
+                                </button>
                             </div>
                         </div>
-                        <div className="text-left md:text-right">
-                            <p className="text-[#2e3675] font-bold text-2xl">
-                                {layout.priceRange}
-                            </p>
-                            <p className="text-gray-500 text-sm">Price Range</p>
-                        </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-xl">
-                        <div className="text-center">
-                            <p className="text-2xl font-bold text-gray-900">
-                                {layout.totalSlots}
-                            </p>
-                            <p className="text-sm text-gray-500">Total Plots</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-2xl font-bold text-green-600">
-                                {layout.availableSlots}
-                            </p>
-                            <p className="text-sm text-gray-500">Available</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-2xl font-bold text-red-500">
-                                {layout.notAvailableSlots}
-                            </p>
-                            <p className="text-sm text-gray-500">Sold/Reserved</p>
-                        </div>
                     </div>
                 </div>
 
-                {/* Status Legend */}
-                <div className="flex items-center gap-6 mb-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                        <span className="text-sm text-gray-600">Available</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                        <span className="text-sm text-gray-600">Sold</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-gray-500"></div>
-                        <span className="text-sm text-gray-600">Not Available</span>
-                    </div>
-                </div>
-
-                {/* Plots by Section */}
-                {Object.entries(layout.slotsBySection).map(([section, slots]) => (
-                    <div key={section} className="mb-8">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">{section}</h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {slots.map((slot) => (
-                                <button
-                                    key={slot.id}
-                                    onClick={() => setSelectedSlot(slot)}
-                                    disabled={slot.status !== "available"}
-                                    className={`p-4 rounded-xl border-2 transition-all text-left cursor-pointer ${selectedSlot?.id === slot.id
-                                            ? "border-[#2e3675] bg-[#2e3675]/5 shadow-lg"
-                                            : slot.status === "available"
-                                                ? "border-gray-200 bg-white hover:border-[#2e3675]/50 hover:shadow-md"
-                                                : "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
-                                        }`}
-                                >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="font-bold text-gray-900 text-lg">
-                                            Plot {slot.plotNumber}
-                                        </span>
-                                        <div
-                                            className={`w-3 h-3 rounded-full ${getStatusColor(slot.status)}`}
-                                        ></div>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-1">{slot.area}</p>
-                                    <p className="text-sm text-gray-500 mb-2">
-                                        {slot.facing} Facing
-                                    </p>
-                                    <p className="text-[#2e3675] font-bold">
-                                        {slot.priceFormatted}
-                                    </p>
-                                </button>
-                            ))}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* 2. Left Column: Map & Selector */}
+                    <div className="lg:col-span-2">
+                        {/* Visual Map */}
+                        <div className="relative rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 mb-8 w-full">
+                            <Image
+                                src={layout.layoutImageUrl}
+                                alt={`${layout.title} Map`}
+                                width={1200}
+                                height={800}
+                                className="w-full h-auto object-contain"
+                                unoptimized
+                            />
                         </div>
-                    </div>
-                ))}
 
-                {/* Selected Slot Details Modal */}
-                {selectedSlot && (
-                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl p-6 z-40">
-                        <div className="max-w-7xl mx-auto">
-                            <div className="flex flex-col md:flex-row md:items-center gap-6">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <h3 className="text-xl font-bold text-gray-900">
-                                            Plot {selectedSlot.plotNumber}
-                                        </h3>
-                                        <span
-                                            className={`px-2 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(
-                                                selectedSlot.status
-                                            )}`}
-                                        >
-                                            {getStatusText(selectedSlot.status)}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                                        <span>
-                                            <strong>Area:</strong> {selectedSlot.area}
-                                        </span>
-                                        <span>
-                                            <strong>Facing:</strong> {selectedSlot.facing}
-                                        </span>
-                                        {selectedSlot.width && (
-                                            <span>
-                                                <strong>Width:</strong> {selectedSlot.width}
-                                            </span>
-                                        )}
-                                        {selectedSlot.height && (
-                                            <span>
-                                                <strong>Height:</strong> {selectedSlot.height}
-                                            </span>
-                                        )}
-                                    </div>
+                        {/* Plot Selection Grid */}
+                        <div className="bg-white rounded-2xl border border-gray-100 p-6">
+                            <h3 className="text-lg font-bold text-gray-800 mb-6">
+                                Select a Plot
+                            </h3>
+                            <div className="flex items-center gap-6 mb-6 pb-6 border-b border-gray-100">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                    <span className="text-sm text-gray-600">Available</span>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="text-right">
-                                        <p className="text-[#2e3675] font-bold text-2xl">
-                                            {selectedSlot.priceFormatted}
-                                        </p>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <span className="text-sm text-gray-600">Sold</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-gray-500"></div>
+                                    <span className="text-sm text-gray-600">Not Available</span>
+                                </div>
+                            </div>
+
+                            {Object.entries(layout.slotsBySection).map(
+                                ([section, slots]) => (
+                                    <div key={section} className="mb-8 last:mb-0">
+                                        <h4 className="text-md font-semibold text-gray-700 mb-4">
+                                            {section}
+                                        </h4>
+                                        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                                            {slots.map((slot) => (
+                                                <button
+                                                    key={slot.id}
+                                                    onClick={() => setSelectedSlot(slot)}
+                                                    disabled={slot.status !== "available"}
+                                                    className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all ${selectedSlot?.id === slot.id
+                                                            ? "bg-[#2e3675] text-white shadow-lg scale-110 z-10"
+                                                            : slot.status === "available"
+                                                                ? "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200"
+                                                                : slot.status === "sold"
+                                                                    ? "bg-red-50 text-red-400 border border-red-100 cursor-not-allowed"
+                                                                    : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                                                        }`}
+                                                >
+                                                    {slot.plotNumber}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
+                                )
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 3. Right Column: Sticky Details */}
+                    <div className="lg:col-span-1">
+                        <div className="sticky top-24">
+                            {selectedSlot ? (
+                                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-6 uppercase">
+                                        PLOT NO : {selectedSlot.plotNumber}
+                                    </h3>
+
+                                    <div className="space-y-4 mb-8">
+                                        <div className="flex items-start text-gray-700 font-medium">
+                                            <span className="w-24 shrink-0 text-gray-900">
+                                                Size :
+                                            </span>
+                                            <span>
+                                                {selectedSlot.width &&
+                                                    selectedSlot.height ? (
+                                                    <>
+                                                        {selectedSlot.width} X{" "}
+                                                        {selectedSlot.height}
+                                                    </>
+                                                ) : null} ({selectedSlot.area})
+                                            </span>
+                                        </div>
+                                        <div className="flex items-start text-gray-700 font-medium">
+                                            <span className="w-24 shrink-0 text-gray-900">Facing :</span>
+                                            <span>{selectedSlot.facing}</span>
+                                        </div>
+                                        <div className="flex items-start text-gray-700 font-medium">
+                                            <span className="w-24 shrink-0 text-gray-900">
+                                                Status :
+                                            </span>
+                                            <span
+                                                className={`${selectedSlot.status === "available"
+                                                        ? "text-green-600"
+                                                        : "text-red-500"
+                                                    }`}
+                                            >
+                                                {getStatusText(selectedSlot.status)}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-start text-gray-700 font-medium">
+                                            <span className="w-24 shrink-0 text-gray-900">
+                                                Price :
+                                            </span>
+                                            <span>{selectedSlot.priceFormatted}</span>
+                                        </div>
+                                    </div>
+
                                     {selectedSlot.status === "available" && (
                                         <button
                                             onClick={() => handleEnquiry(selectedSlot)}
                                             disabled={enquiryLoading}
-                                            className="bg-[#2e3675] hover:bg-[#232958] text-white font-semibold px-8 py-3 rounded-xl transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-70"
+                                            className="w-full bg-[#2e3675] hover:bg-[#232958] text-white font-medium py-3.5 rounded-lg transition-colors shadow-lg cursor-pointer disabled:opacity-70"
                                         >
                                             {enquiryLoading ? (
-                                                <>
+                                                <span className="flex items-center justify-center gap-2">
                                                     <Loader2 className="w-5 h-5 animate-spin" />
-                                                    Submitting...
-                                                </>
+                                                    Sending...
+                                                </span>
                                             ) : (
-                                                <>
-                                                    Enquire Now
-                                                    <ChevronRight className="w-5 h-5" />
-                                                </>
+                                                "Request Details"
                                             )}
                                         </button>
                                     )}
-                                    <button
-                                        onClick={() => setSelectedSlot(null)}
-                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                                    >
-                                        ✕
-                                    </button>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200 text-center">
+                                    <Grid3X3 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                                        Select a Plot
+                                    </h3>
+                                    <p className="text-gray-500">
+                                        Click on a plot number from the grid to view its details and pricing.
+                                    </p>
+
+                                    {/* Legend Reminder */}
+                                    <div className="mt-8 pt-6 border-t border-gray-200 text-left">
+                                        <p className="text-sm font-semibold mb-3">Statistics:</p>
+                                        <div className="space-y-2 text-sm text-gray-600">
+                                            <div className="flex justify-between">
+                                                <span>Total Plots:</span>
+                                                <span className="font-medium text-gray-900">{layout.totalSlots}</span>
+                                            </div>
+                                            <div className="flex justify-between text-green-700">
+                                                <span>Available:</span>
+                                                <span className="font-medium">{layout.availableSlots}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
-                )}
+                </div>
             </div>
 
             <Contact />

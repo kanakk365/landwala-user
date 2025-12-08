@@ -95,12 +95,12 @@ export default function LayoutsExplorePage() {
                         {layouts.map((layout) => (
                             <div
                                 key={layout.id}
-                                className="flex flex-col md:flex-row bg-white rounded-xl overflow-hidden transition-all duration-300 border border-gray-100 hover:shadow-lg group"
+                                className="flex flex-col md:flex-row bg-white rounded-xl overflow-hidden transition-all duration-300 border border-gray-100 group p-2"
                             >
                                 {/* Image Section */}
                                 <Link
                                     href={`/layouts/${layout.id}`}
-                                    className="md:w-2/5 relative h-64 md:h-auto min-h-[220px] block overflow-hidden"
+                                    className="md:w-2/5 relative h-64 md:h-auto min-h-[220px] block overflow-hidden rounded-2xl"
                                 >
                                     <Image
                                         src={layout.imageUrl}
