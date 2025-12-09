@@ -24,8 +24,7 @@ function Hero() {
     <div className="flex flex-col">
       <section
         ref={containerRef}
-        className="relative min-h-[600px] flex items-start px-6 sm:px-8 overflow-hidden py-20"
-        style={{ backgroundColor: "#050a24" }}
+        className="relative min-h-[600px] bg-[#050a24] flex items-start px-6 sm:px-8 overflow-hidden py-20"
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
           <svg
