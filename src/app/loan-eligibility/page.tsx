@@ -87,13 +87,12 @@ export default function LoanEligibilityPage() {
                       ₹{app.desiredAmount?.toLocaleString()}
                     </span>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        app.status === "APPROVED"
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${app.status === "APPROVED"
                           ? "bg-green-100 text-green-700"
                           : app.status === "REJECTED"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
                     >
                       {app.status || "PENDING"}
                     </span>
@@ -145,7 +144,7 @@ export default function LoanEligibilityPage() {
             </h2>
             <p className="text-gray-500 text-lg mb-8 max-w-md">
               Check your eligibility and apply for property loans with trusted
-              Landwala partners.
+              LandWalaa partners.
             </p>
             <Link href="/check-loan-eligibility">
               <button className="bg-[#1d2567] text-white px-12 py-4 rounded-full font-semibold shadow-xl hover:opacity-90 transition-opacity">

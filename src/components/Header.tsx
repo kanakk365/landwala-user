@@ -21,14 +21,14 @@ export default function Header() {
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logo.png"
-            alt="LandWala Logo"
+            alt="LandWalaa Logo"
             width={40}
             height={40}
             className="object-contain"
           />
           <span className="text-2xl font-bold tracking-tight">
             <span className="text-[#1d2567]">Land</span>
-            <span className="text-[#f7ae49]">Wala</span>
+            <span className="text-[#f7ae49]">Walaa</span>
           </span>
         </Link>
 
