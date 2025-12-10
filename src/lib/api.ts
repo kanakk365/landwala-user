@@ -408,8 +408,10 @@ export const propertiesApi = {
 
 // Enquiries API Types
 export interface EnquiryData {
-  type: "PROPERTY" | "GENERAL";
+  type: "PROPERTY" | "LAYOUT" | "GENERAL";
   propertyId?: string;
+  layoutId?: string;
+  slotId?: string;
   message: string;
 }
 

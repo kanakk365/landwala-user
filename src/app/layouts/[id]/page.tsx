@@ -53,8 +53,10 @@ export default function LayoutDetailsPage() {
         try {
             setEnquiryLoading(true);
             await enquiriesApi.submit({
-                type: "PROPERTY",
-                message: `I'm interested in Plot ${slot.plotNumber} (${slot.area}, ${slot.facing} facing) at ${layout.title}, ${layout.location}. Price: ${slot.priceFormatted}`,
+                type: "LAYOUT",
+                layoutId: layout.id,
+                slotId: slot.id,
+                message: "I'd like to know more.",
             });
             setShowSuccessModal(true);
         } catch (err) {
@@ -217,12 +219,12 @@ export default function LayoutDetailsPage() {
                                                     onClick={() => setSelectedSlot(slot)}
                                                     disabled={slot.status !== "available"}
                                                     className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all ${selectedSlot?.id === slot.id
-                                                            ? "bg-[#2e3675] text-white shadow-lg scale-110 z-10"
-                                                            : slot.status === "available"
-                                                                ? "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200"
-                                                                : slot.status === "sold"
-                                                                    ? "bg-red-50 text-red-400 border border-red-100 cursor-not-allowed"
-                                                                    : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                                                        ? "bg-[#2e3675] text-white shadow-lg scale-110 z-10"
+                                                        : slot.status === "available"
+                                                            ? "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200"
+                                                            : slot.status === "sold"
+                                                                ? "bg-red-50 text-red-400 border border-red-100 cursor-not-allowed"
+                                                                : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
                                                         }`}
                                                 >
                                                     {slot.plotNumber}
@@ -269,8 +271,8 @@ export default function LayoutDetailsPage() {
                                             </span>
                                             <span
                                                 className={`${selectedSlot.status === "available"
-                                                        ? "text-green-600"
-                                                        : "text-red-500"
+                                                    ? "text-green-600"
+                                                    : "text-red-500"
                                                     }`}
                                             >
                                                 {getStatusText(selectedSlot.status)}
