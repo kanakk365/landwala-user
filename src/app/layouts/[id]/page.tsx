@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import Contact from "@/components/Contact";
@@ -14,9 +14,48 @@ import {
     Share2,
     Heart,
     ImageIcon,
+    ZoomIn,
+    ZoomOut,
+    RotateCcw,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+// CSS styles for SVG hover animations with blue highlight
+const svgHoverStyles = `
+    .svg-plot-group {
+        cursor: pointer;
+        transition: transform 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
+        transform-origin: center center;
+        transform-box: fill-box;
+    }
+    .svg-plot-group:hover {
+        transform: scale(1.15);
+        filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.8)) brightness(1.1);
+    }
+    .svg-plot-group:hover path,
+    .svg-plot-group:hover rect,
+    .svg-plot-group:hover polygon {
+        fill: rgba(59, 130, 246, 0.6) !important;
+        stroke: #2563eb !important;
+        stroke-width: 2px !important;
+    }
+    .svg-plot-group.selected {
+        transform: scale(1.15);
+        filter: drop-shadow(0 0 16px rgba(37, 99, 235, 0.9)) brightness(1.15);
+    }
+    .svg-plot-group.selected path,
+    .svg-plot-group.selected rect,
+    .svg-plot-group.selected polygon {
+        fill: rgba(37, 99, 235, 0.7) !important;
+        stroke: #1d4ed8 !important;
+        stroke-width: 3px !important;
+    }
+    .svg-container {
+        transition: transform 0.3s ease;
+        transform-origin: center center;
+    }
+`;
 
 export default function LayoutDetailsPage() {
     const params = useParams();
@@ -29,6 +68,15 @@ export default function LayoutDetailsPage() {
     const [enquiryLoading, setEnquiryLoading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showPlots, setShowPlots] = useState(false);
+    const [svgContent, setSvgContent] = useState<string | null>(null);
+    const [svgLoading, setSvgLoading] = useState(false);
+    const [selectedPlotNumber, setSelectedPlotNumber] = useState<string | null>(null);
+    const [zoomLevel, setZoomLevel] = useState(1);
+
+    // Zoom controls
+    const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.25, 3));
+    const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.25, 0.5));
+    const handleZoomReset = () => setZoomLevel(1);
 
     useEffect(() => {
         const fetchLayout = async () => {
@@ -48,6 +96,102 @@ export default function LayoutDetailsPage() {
 
         fetchLayout();
     }, [layoutId]);
+
+    // Fetch and process SVG content
+    useEffect(() => {
+        const fetchAndProcessSvg = async () => {
+            if (!layout?.layoutImageUrl) return;
+
+            try {
+                setSvgLoading(true);
+                // Use proxy API to avoid CORS issues when fetching from S3
+                const proxyUrl = `/api/proxy-svg?url=${encodeURIComponent(layout.layoutImageUrl)}`;
+                const response = await fetch(proxyUrl);
+                const svgText = await response.text();
+
+                // Parse the SVG
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+                const svgElement = svgDoc.querySelector("svg");
+
+                if (svgElement) {
+                    // Find all groups that match the pattern:
+                    // - id starts with "g" followed by numbers (e.g., g4107)
+                    // - has inkscape:label attribute with "plot" followed by a number
+                    const allGroups = svgElement.querySelectorAll("g[id]");
+
+                    allGroups.forEach((group) => {
+                        const id = group.getAttribute("id");
+                        const inkscapeLabel = group.getAttribute("inkscape:label");
+
+                        // Check if id matches pattern g followed by numbers
+                        const idMatches = id && /^g\d+$/.test(id);
+
+                        // Check if inkscape:label matches "plot" followed by numbers
+                        const labelMatches = inkscapeLabel && /^plot\s*\d+$/i.test(inkscapeLabel);
+
+                        if (idMatches && labelMatches) {
+                            // Add the hover class and data attribute
+                            group.classList.add("svg-plot-group");
+
+                            // Extract plot number from the label
+                            const plotMatch = inkscapeLabel.match(/plot\s*(\d+)/i);
+                            if (plotMatch) {
+                                group.setAttribute("data-plot-number", plotMatch[1]);
+                            }
+                        }
+                    });
+
+                    // Add responsive styles to SVG
+                    svgElement.setAttribute("width", "100%");
+                    svgElement.setAttribute("height", "auto");
+                    svgElement.style.maxWidth = "100%";
+
+                    // Serialize back to string
+                    const serializer = new XMLSerializer();
+                    const modifiedSvg = serializer.serializeToString(svgElement);
+                    setSvgContent(modifiedSvg);
+                }
+            } catch (err) {
+                console.error("Error fetching SVG:", err);
+                // Fallback to image if SVG fetch fails
+                setSvgContent(null);
+            } finally {
+                setSvgLoading(false);
+            }
+        };
+
+        fetchAndProcessSvg();
+    }, [layout?.layoutImageUrl]);
+
+    // Handle click on SVG plot groups
+    const handleSvgClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.target as Element;
+        const plotGroup = target.closest(".svg-plot-group");
+
+        if (plotGroup) {
+            const plotNumber = plotGroup.getAttribute("data-plot-number");
+            setSelectedPlotNumber(plotNumber);
+
+            // Find the corresponding slot from the layout data
+            if (layout && plotNumber) {
+                const slot = layout.slots.find(
+                    (s) => s.plotNumber === plotNumber
+                );
+                if (slot) {
+                    setSelectedSlot(slot);
+                }
+            }
+
+            // Remove selected class from all groups
+            document.querySelectorAll(".svg-plot-group.selected").forEach((el) => {
+                el.classList.remove("selected");
+            });
+
+            // Add selected class to clicked group
+            plotGroup.classList.add("selected");
+        }
+    }, [layout]);
 
     const handleEnquiry = async (slot: LayoutSlot) => {
         if (enquiryLoading || !layout) return;
@@ -176,22 +320,76 @@ export default function LayoutDetailsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* 2. Left Column: Map & Selector */}
                     <div className="lg:col-span-2">
+                        {/* Inject SVG hover styles */}
+                        <style dangerouslySetInnerHTML={{ __html: svgHoverStyles }} />
+
                         {/* Toggle between Visual Map and Plot Selection */}
                         <div className="relative rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 mb-8 w-full">
                             {!showPlots ? (
-                                /* Visual Map - Click to show plots */
-                                <div
-                                    onClick={() => setShowPlots(true)}
-                                    className="cursor-pointer"
-                                >
-                                    <Image
-                                        src={layout.layoutImageUrl}
-                                        alt={`${layout.title} Map`}
-                                        width={1200}
-                                        height={800}
-                                        className="w-full h-auto object-contain"
-                                        unoptimized
-                                    />
+                                /* Interactive SVG Map */
+                                <div className="relative">
+                                    {/* Zoom Controls */}
+                                    {svgContent && (
+                                        <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-200">
+                                            <button
+                                                onClick={handleZoomIn}
+                                                className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                title="Zoom In"
+                                            >
+                                                <ZoomIn className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                            </button>
+                                            <button
+                                                onClick={handleZoomOut}
+                                                className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                title="Zoom Out"
+                                            >
+                                                <ZoomOut className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                            </button>
+                                            <div className="h-px bg-gray-200 my-1" />
+                                            <button
+                                                onClick={handleZoomReset}
+                                                className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                title="Reset Zoom"
+                                            >
+                                                <RotateCcw className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                            </button>
+                                            <div className="text-xs text-center text-gray-500 font-medium">
+                                                {Math.round(zoomLevel * 100)}%
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {svgLoading ? (
+                                        <div className="flex items-center justify-center py-20">
+                                            <Loader2 className="w-8 h-8 animate-spin text-[#2e3675]" />
+                                        </div>
+                                    ) : svgContent ? (
+                                        <div className="overflow-auto max-h-[600px] cursor-grab active:cursor-grabbing">
+                                            <div
+                                                onClick={handleSvgClick}
+                                                className="svg-container w-full min-w-fit"
+                                                style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}
+                                                dangerouslySetInnerHTML={{ __html: svgContent }}
+                                            />
+                                        </div>
+                                    ) : (
+                                        /* Fallback to Image if SVG fetch fails */
+                                        <Image
+                                            src={layout.layoutImageUrl}
+                                            alt={`${layout.title} Map`}
+                                            width={1200}
+                                            height={800}
+                                            className="w-full h-auto object-contain"
+                                            unoptimized
+                                        />
+                                    )}
+
+                                    {/* Hint overlay */}
+                                    {svgContent && !selectedSlot && (
+                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-sm px-4 py-2 rounded-full">
+                                            Hover over plots to see them • Click to select
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 /* Plot Selection Grid */
