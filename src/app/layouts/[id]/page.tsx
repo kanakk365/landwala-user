@@ -17,9 +17,13 @@ import {
     ZoomIn,
     ZoomOut,
     RotateCcw,
+    Maximize2,
+    Minimize2,
+    X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 
 // CSS styles for SVG hover animations with blue highlight
 const svgHoverStyles = `
@@ -72,11 +76,24 @@ export default function LayoutDetailsPage() {
     const [svgLoading, setSvgLoading] = useState(false);
     const [selectedPlotNumber, setSelectedPlotNumber] = useState<string | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     // Zoom controls
     const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.25, 3));
     const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.25, 0.5));
     const handleZoomReset = () => setZoomLevel(1);
+    const toggleFullscreen = () => setIsFullscreen(prev => !prev);
+
+    // ESC key to close fullscreen
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isFullscreen) {
+                setIsFullscreen(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isFullscreen]);
 
     useEffect(() => {
         const fetchLayout = async () => {
@@ -190,6 +207,10 @@ export default function LayoutDetailsPage() {
 
             // Add selected class to clicked group
             plotGroup.classList.add("selected");
+
+            // Close fullscreen mode if open and show the plot grid section
+            setIsFullscreen(false);
+            setShowPlots(true);
         }
     }, [layout]);
 
@@ -324,73 +345,161 @@ export default function LayoutDetailsPage() {
                         <style dangerouslySetInnerHTML={{ __html: svgHoverStyles }} />
 
                         {/* Toggle between Visual Map and Plot Selection */}
-                        <div className="relative rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 mb-8 w-full">
-                            {!showPlots ? (
-                                /* Interactive SVG Map */
-                                <div className="relative">
-                                    {/* Zoom Controls */}
-                                    {svgContent && (
-                                        <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-200">
-                                            <button
-                                                onClick={handleZoomIn}
-                                                className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
-                                                title="Zoom In"
-                                            >
-                                                <ZoomIn className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
-                                            </button>
-                                            <button
-                                                onClick={handleZoomOut}
-                                                className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
-                                                title="Zoom Out"
-                                            >
-                                                <ZoomOut className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
-                                            </button>
-                                            <div className="h-px bg-gray-200 my-1" />
-                                            <button
-                                                onClick={handleZoomReset}
-                                                className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
-                                                title="Reset Zoom"
-                                            >
-                                                <RotateCcw className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
-                                            </button>
-                                            <div className="text-xs text-center text-gray-500 font-medium">
-                                                {Math.round(zoomLevel * 100)}%
+                        <LayoutGroup>
+                            {/* Fullscreen Overlay */}
+                            <AnimatePresence>
+                                {isFullscreen && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+                                        onClick={(e) => {
+                                            if (e.target === e.currentTarget) toggleFullscreen();
+                                        }}
+                                    >
+                                        <motion.div
+                                            layoutId="svg-map-container"
+                                            className="relative w-full h-full max-w-[95vw] max-h-[95vh] bg-gray-50 rounded-2xl overflow-hidden border border-gray-200"
+                                        >
+                                            {/* Fullscreen Controls */}
+                                            <div className="absolute top-4 right-4 z-30 flex gap-2">
+                                                <div className="flex flex-col gap-2 bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-200">
+                                                    <button
+                                                        onClick={handleZoomIn}
+                                                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                        title="Zoom In"
+                                                    >
+                                                        <ZoomIn className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                                    </button>
+                                                    <button
+                                                        onClick={handleZoomOut}
+                                                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                        title="Zoom Out"
+                                                    >
+                                                        <ZoomOut className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                                    </button>
+                                                    <div className="h-px bg-gray-200 my-1" />
+                                                    <button
+                                                        onClick={handleZoomReset}
+                                                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                        title="Reset Zoom"
+                                                    >
+                                                        <RotateCcw className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                                    </button>
+                                                    <div className="text-xs text-center text-gray-500 font-medium">
+                                                        {Math.round(zoomLevel * 100)}%
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={toggleFullscreen}
+                                                    className="h-fit p-3 bg-white/90 backdrop-blur-sm hover:bg-red-50 rounded-xl transition-colors group shadow-lg border border-gray-200"
+                                                    title="Exit Fullscreen"
+                                                >
+                                                    <X className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+                                                </button>
                                             </div>
-                                        </div>
-                                    )}
 
-                                    {svgLoading ? (
-                                        <div className="flex items-center justify-center py-20">
-                                            <Loader2 className="w-8 h-8 animate-spin text-[#2e3675]" />
-                                        </div>
-                                    ) : svgContent ? (
-                                        <div className="overflow-auto max-h-[600px] cursor-grab active:cursor-grabbing">
-                                            <div
-                                                onClick={handleSvgClick}
-                                                className="svg-container w-full min-w-fit"
-                                                style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}
-                                                dangerouslySetInnerHTML={{ __html: svgContent }}
+                                            {/* Fullscreen SVG Content */}
+                                            <div className="overflow-auto w-full h-full cursor-grab active:cursor-grabbing p-4">
+                                                <div
+                                                    onClick={handleSvgClick}
+                                                    className="svg-container w-full min-w-fit"
+                                                    style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}
+                                                    dangerouslySetInnerHTML={{ __html: svgContent || '' }}
+                                                />
+                                            </div>
+
+                                            {/* Fullscreen Hint */}
+                                            {!selectedSlot && (
+                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-sm px-4 py-2 rounded-full">
+                                                    Press ESC or click outside to exit • Hover over plots to see them
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Normal View Container */}
+                            <motion.div
+                                layoutId={!isFullscreen ? "svg-map-container" : undefined}
+                                className="relative rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 mb-8 w-full"
+                            >
+                                {!showPlots ? (
+                                    /* Interactive SVG Map */
+                                    <div className="relative">
+                                        {/* Zoom Controls */}
+                                        {svgContent && (
+                                            <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-200">
+                                                <button
+                                                    onClick={handleZoomIn}
+                                                    className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                    title="Zoom In"
+                                                >
+                                                    <ZoomIn className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                                </button>
+                                                <button
+                                                    onClick={handleZoomOut}
+                                                    className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                    title="Zoom Out"
+                                                >
+                                                    <ZoomOut className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                                </button>
+                                                <div className="h-px bg-gray-200 my-1" />
+                                                <button
+                                                    onClick={handleZoomReset}
+                                                    className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                    title="Reset Zoom"
+                                                >
+                                                    <RotateCcw className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                                </button>
+                                                <div className="h-px bg-gray-200 my-1" />
+                                                <button
+                                                    onClick={toggleFullscreen}
+                                                    className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                                                    title="Fullscreen"
+                                                >
+                                                    <Maximize2 className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                                                </button>
+                                                <div className="text-xs text-center text-gray-500 font-medium">
+                                                    {Math.round(zoomLevel * 100)}%
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {svgLoading ? (
+                                            <div className="flex items-center justify-center py-20">
+                                                <Loader2 className="w-8 h-8 animate-spin text-[#2e3675]" />
+                                            </div>
+                                        ) : svgContent ? (
+                                            <div className="overflow-auto max-h-[600px] cursor-grab active:cursor-grabbing">
+                                                <div
+                                                    onClick={handleSvgClick}
+                                                    className="svg-container w-full min-w-fit"
+                                                    style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}
+                                                    dangerouslySetInnerHTML={{ __html: svgContent }}
+                                                />
+                                            </div>
+                                        ) : (
+                                            /* Fallback to Image if SVG fetch fails */
+                                            <Image
+                                                src={layout.layoutImageUrl}
+                                                alt={`${layout.title} Map`}
+                                                width={1200}
+                                                height={800}
+                                                className="w-full h-auto object-contain"
+                                                unoptimized
                                             />
-                                        </div>
-                                    ) : (
-                                        /* Fallback to Image if SVG fetch fails */
-                                        <Image
-                                            src={layout.layoutImageUrl}
-                                            alt={`${layout.title} Map`}
-                                            width={1200}
-                                            height={800}
-                                            className="w-full h-auto object-contain"
-                                            unoptimized
-                                        />
-                                    )}
+                                        )}
 
-                                    {/* Hint overlay */}
-                                    {svgContent && !selectedSlot && (
-                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-sm px-4 py-2 rounded-full">
-                                            Hover over plots to see them • Click to select
-                                        </div>
-                                    )}
-                                </div>
+                                        {/* Hint overlay */}
+                                        {svgContent && !selectedSlot && (
+                                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-sm px-4 py-2 rounded-full">
+                                                Hover over plots to see them • Click to select
+                                            </div>
+                                        )}
+                                    </div>
                             ) : (
                                 /* Plot Selection Grid */
                                 <div className="bg-white p-6">
@@ -455,7 +564,8 @@ export default function LayoutDetailsPage() {
                                     )}
                                 </div>
                             )}
-                        </div>
+                            </motion.div>
+                        </LayoutGroup>
                     </div>
 
                     {/* 3. Right Column: Sticky Details */}
