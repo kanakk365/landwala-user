@@ -25,7 +25,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 
-// CSS styles for SVG hover animations with blue highlight
 const svgHoverStyles = `
     .svg-plot-group {
         cursor: pointer;
@@ -151,11 +150,9 @@ export default function LayoutDetailsPage() {
                             // Add the hover class and data attribute
                             group.classList.add("svg-plot-group");
 
-                            // Extract plot number from the label
-                            const plotMatch = inkscapeLabel.match(/plot\s*(\d+)/i);
-                            if (plotMatch) {
-                                group.setAttribute("data-plot-number", plotMatch[1]);
-                            }
+                            // Store the full inkscape:label value for matching with slot data
+                            // e.g., "plot 1", "plot 2", etc.
+                            group.setAttribute("data-plot-label", inkscapeLabel.toLowerCase().trim());
                         }
                     });
 
@@ -187,13 +184,14 @@ export default function LayoutDetailsPage() {
         const plotGroup = target.closest(".svg-plot-group");
 
         if (plotGroup) {
-            const plotNumber = plotGroup.getAttribute("data-plot-number");
-            setSelectedPlotNumber(plotNumber);
+            const plotLabel = plotGroup.getAttribute("data-plot-label");
+            setSelectedPlotNumber(plotLabel);
 
             // Find the corresponding slot from the layout data
-            if (layout && plotNumber) {
+            // Match by sectionTitle (case-insensitive)
+            if (layout && plotLabel) {
                 const slot = layout.slots.find(
-                    (s) => s.plotNumber === plotNumber
+                    (s) => s.sectionTitle.toLowerCase().trim() === plotLabel
                 );
                 if (slot) {
                     setSelectedSlot(slot);
@@ -208,9 +206,8 @@ export default function LayoutDetailsPage() {
             // Add selected class to clicked group
             plotGroup.classList.add("selected");
 
-            // Close fullscreen mode if open and show the plot grid section
+            // Close fullscreen mode if open (don't force showPlots anymore)
             setIsFullscreen(false);
-            setShowPlots(true);
         }
     }, [layout]);
 
@@ -500,70 +497,70 @@ export default function LayoutDetailsPage() {
                                             </div>
                                         )}
                                     </div>
-                            ) : (
-                                /* Plot Selection Grid */
-                                <div className="bg-white p-6">
-                                    {/* Header with back button */}
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h3 className="text-lg font-bold text-gray-800">
-                                            Select a Plot
-                                        </h3>
-                                        <button
-                                            onClick={() => setShowPlots(false)}
-                                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#2e3675] bg-[#2e3675]/10 hover:bg-[#2e3675]/20 rounded-lg transition-colors cursor-pointer"
-                                        >
-                                            <ImageIcon className="w-4 h-4" />
-                                            View Layout Image
-                                        </button>
-                                    </div>
+                                ) : (
+                                    /* Plot Selection Grid */
+                                    <div className="bg-white p-6">
+                                        {/* Header with back button */}
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h3 className="text-lg font-bold text-gray-800">
+                                                Select a Plot
+                                            </h3>
+                                            <button
+                                                onClick={() => setShowPlots(false)}
+                                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#2e3675] bg-[#2e3675]/10 hover:bg-[#2e3675]/20 rounded-lg transition-colors cursor-pointer"
+                                            >
+                                                <ImageIcon className="w-4 h-4" />
+                                                View Layout Image
+                                            </button>
+                                        </div>
 
-                                    {/* Legend */}
-                                    <div className="flex items-center gap-6 mb-6 pb-6 border-b border-gray-100">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                                            <span className="text-sm text-gray-600">Available</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                                            <span className="text-sm text-gray-600">Sold</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-                                            <span className="text-sm text-gray-600">Not Available</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Plot Grid */}
-                                    {Object.entries(layout.slotsBySection).map(
-                                        ([section, slots]) => (
-                                            <div key={section} className="mb-8 last:mb-0">
-                                                <h4 className="text-md font-semibold text-gray-700 mb-4">
-                                                    {section}
-                                                </h4>
-                                                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                                                    {slots.map((slot) => (
-                                                        <button
-                                                            key={slot.id}
-                                                            onClick={() => setSelectedSlot(slot)}
-                                                            disabled={slot.status !== "available"}
-                                                            className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all ${selectedSlot?.id === slot.id
-                                                                ? "bg-[#2e3675] text-white shadow-lg scale-110 z-10"
-                                                                : slot.status === "available"
-                                                                    ? "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200"
-                                                                    : slot.status === "sold"
-                                                                        ? "bg-red-50 text-red-400 border border-red-100 cursor-not-allowed"
-                                                                        : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
-                                                                }`}
-                                                        >
-                                                            {slot.plotNumber}
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                        {/* Legend */}
+                                        <div className="flex items-center gap-6 mb-6 pb-6 border-b border-gray-100">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                                <span className="text-sm text-gray-600">Available</span>
                                             </div>
-                                        )
-                                    )}
-                                </div>
-                            )}
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                                                <span className="text-sm text-gray-600">Sold</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-gray-500"></div>
+                                                <span className="text-sm text-gray-600">Not Available</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Plot Grid */}
+                                        {Object.entries(layout.slotsBySection).map(
+                                            ([section, slots]) => (
+                                                <div key={section} className="mb-8 last:mb-0">
+                                                    <h4 className="text-md font-semibold text-gray-700 mb-4">
+                                                        {section}
+                                                    </h4>
+                                                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                                                        {slots.map((slot) => (
+                                                            <button
+                                                                key={slot.id}
+                                                                onClick={() => setSelectedSlot(slot)}
+                                                                disabled={slot.status !== "available"}
+                                                                className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all ${selectedSlot?.id === slot.id
+                                                                    ? "bg-[#2e3675] text-white shadow-lg scale-110 z-10"
+                                                                    : slot.status === "available"
+                                                                        ? "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200"
+                                                                        : slot.status === "sold"
+                                                                            ? "bg-red-50 text-red-400 border border-red-100 cursor-not-allowed"
+                                                                            : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                                                                    }`}
+                                                            >
+                                                                {slot.plotNumber}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                )}
                             </motion.div>
                         </LayoutGroup>
                     </div>
