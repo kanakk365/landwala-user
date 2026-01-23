@@ -21,7 +21,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 api.interceptors.response.use(
@@ -36,7 +36,7 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;
@@ -138,7 +138,7 @@ export const authApi = {
 
 export const loanApi = {
   apply: async (
-    data: LoanApplicationData
+    data: LoanApplicationData,
   ): Promise<LoanApplicationResponse> => {
     const formData = new FormData();
     formData.append("fullName", data.fullName);
@@ -212,7 +212,7 @@ export interface LegalVerificationListResponse {
 
 export const legalVerificationApi = {
   apply: async (
-    data: LegalVerificationData
+    data: LegalVerificationData,
   ): Promise<LegalVerificationResponse> => {
     const formData = new FormData();
 
@@ -243,7 +243,7 @@ export const legalVerificationApi = {
   },
 
   getApplicationById: async (
-    id: string
+    id: string,
   ): Promise<LegalVerificationResponse> => {
     const response = await api.get(`/legal-verification/applications/${id}`);
     return response.data;
@@ -279,7 +279,7 @@ export interface LandRegistrationSubmitData {
 
 export const landRegistrationApi = {
   submit: async (
-    data: LandRegistrationSubmitData
+    data: LandRegistrationSubmitData,
   ): Promise<LandRegistrationEnquiry> => {
     const response = await api.post("/land-registration/submit", data);
     return response.data;
@@ -325,7 +325,7 @@ export interface LandProtectionRequestsResponse {
 
 export const landProtectionApi = {
   requestQuote: async (
-    data: LandProtectionRequestData
+    data: LandProtectionRequestData,
   ): Promise<LandProtectionRequest> => {
     const response = await api.post("/land-protection/request-quote", data);
     return response.data;
@@ -505,7 +505,7 @@ export interface PropertySubmissionResponse {
 
 export const propertySubmissionApi = {
   submit: async (
-    data: PropertySubmissionData
+    data: PropertySubmissionData,
   ): Promise<PropertySubmissionResponse> => {
     const formData = new FormData();
     formData.append("title", data.title);
@@ -530,6 +530,52 @@ export const propertySubmissionApi = {
         "Content-Type": "multipart/form-data",
       },
     });
+    return response.data;
+  },
+};
+// Wishlist API Types
+export interface WishlistData {
+  type: "LAYOUT" | "PROPERTY";
+  layoutId?: string;
+  propertyId?: string;
+}
+
+export interface WishlistItem {
+  id: string;
+  type: "LAYOUT" | "PROPERTY";
+  layout?: Layout;
+  property?: Property;
+  createdAt: string;
+}
+
+export interface WishlistResponse {
+  data: WishlistItem[];
+  meta: PropertiesMeta;
+}
+
+export const wishlistApi = {
+  add: async (data: WishlistData) => {
+    const response = await api.post("/wishlist", data);
+    return response.data;
+  },
+  get: async (params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<WishlistResponse> => {
+    const response = await api.get("/wishlist", { params });
+    return response.data;
+  },
+};
+
+// Issue Reporting API Types
+export interface IssueReportData {
+  title: string;
+  description: string;
+}
+
+export const issueReportsApi = {
+  submit: async (data: IssueReportData) => {
+    const response = await api.post("/issue-reports", data);
     return response.data;
   },
 };

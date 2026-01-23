@@ -3,7 +3,8 @@
 import { Heart, MapPin, Ruler, Grid3X3 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Property } from "@/lib/api";
+import { Property, wishlistApi } from "@/lib/api";
+import { useState } from "react";
 
 interface LegacyPropertyProps {
   id?: string | number;
@@ -16,8 +17,10 @@ interface LegacyPropertyProps {
   area?: string;
 }
 
-function isApiProperty(property: Property | LegacyPropertyProps): property is Property {
-  return 'title' in property && 'locationAddress' in property;
+function isApiProperty(
+  property: Property | LegacyPropertyProps,
+): property is Property {
+  return "title" in property && "locationAddress" in property;
 }
 
 export default function PropertyResultCard({
@@ -28,22 +31,50 @@ export default function PropertyResultCard({
   const isApi = isApiProperty(property);
   const id = isApi ? property.id : property.id || "1";
   const image = isApi
-    ? (property.images?.[0] || "https://placehold.co/600x400/e2e8f0/1e293b?text=Property")
+    ? property.images?.[0] ||
+      "https://placehold.co/600x400/e2e8f0/1e293b?text=Property"
     : property.image;
   const title = isApi ? property.title : "Property";
   const priceRange = isApi ? property.priceRange : property.priceRange;
   const location = isApi
-    ? (property.locationAddress || `${property.city}, ${property.state}`)
+    ? property.locationAddress || `${property.city}, ${property.state}`
     : property.location;
 
   const sizeField = isApi
-    ? property.overviewFields?.find(f => f.label.toLowerCase().includes('size'))
+    ? property.overviewFields?.find((f) =>
+        f.label.toLowerCase().includes("size"),
+      )
     : null;
   const typeField = isApi
-    ? property.overviewFields?.find(f => f.label.toLowerCase().includes('type'))
+    ? property.overviewFields?.find((f) =>
+        f.label.toLowerCase().includes("type"),
+      )
     : null;
   const area = sizeField?.value || (isApi ? undefined : property.area);
   const propertyType = typeField?.value || "Land";
+
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isApi || !property.id) return;
+
+    try {
+      setLoading(true);
+      await wishlistApi.add({
+        type: "PROPERTY",
+        propertyId: property.id,
+      });
+      setIsWishlisted(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row bg-white rounded-xl overflow-hidden transition-shadow duration-300 border border-gray-100 ">
@@ -68,8 +99,14 @@ export default function PropertyResultCard({
       </Link>
 
       <div className="p-6 md:w-3/5 flex flex-col justify-between relative">
-        <button className="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
-          <Heart className="w-6 h-6" />
+        <button
+          onClick={handleWishlist}
+          disabled={loading}
+          className="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+        >
+          <Heart
+            className={`w-6 h-6 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`}
+          />
         </button>
 
         <div>
@@ -79,9 +116,7 @@ export default function PropertyResultCard({
             </h3>
           </Link>
 
-          <p className="text-[#2e3675] text-2xl font-bold mb-2">
-            {priceRange}
-          </p>
+          <p className="text-[#2e3675] text-2xl font-bold mb-2">{priceRange}</p>
 
           <div className="flex items-center text-gray-600 mb-2">
             <MapPin className="w-4 h-4 mr-1 text-gray-400" />
