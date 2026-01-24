@@ -404,6 +404,19 @@ export const propertiesApi = {
     const response = await api.get(`/properties/${id}`);
     return response.data;
   },
+
+  getLatestListings: async (params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<PropertiesResponse> => {
+    const response = await api.get("/properties/latest-listings", { params });
+    return response.data;
+  },
+
+  getLatestListingById: async (id: string): Promise<Property> => {
+    const response = await api.get(`/properties/latest-listings/${id}`);
+    return response.data;
+  },
 };
 
 // Enquiries API Types

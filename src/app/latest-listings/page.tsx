@@ -19,7 +19,7 @@ export default function LatestListingsPage() {
     const fetchProperties = async () => {
       try {
         setLoading(true);
-        const response = await propertiesApi.getProperties({
+        const response = await propertiesApi.getLatestListings({
           page,
           limit: 10,
         });
@@ -90,39 +90,45 @@ export default function LatestListingsPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={!meta.hasPrevPage}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer ${meta.hasPrevPage
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer ${
+                    meta.hasPrevPage
                       ? "bg-[#2e3675] text-white hover:bg-[#1d2567]"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
+                  }`}
                 >
                   Previous
                 </button>
 
                 <div className="flex items-center gap-2">
-                  {Array.from({ length: Math.min(5, meta.totalPages) }, (_, i) => {
-                    const pageNum = i + 1;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`w-10 h-10 rounded-lg font-medium transition-colors cursor-pointer ${page === pageNum
-                            ? "bg-[#2e3675] text-white"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  {Array.from(
+                    { length: Math.min(5, meta.totalPages) },
+                    (_, i) => {
+                      const pageNum = i + 1;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setPage(pageNum)}
+                          className={`w-10 h-10 rounded-lg font-medium transition-colors cursor-pointer ${
+                            page === pageNum
+                              ? "bg-[#2e3675] text-white"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                           }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    },
+                  )}
                 </div>
 
                 <button
                   onClick={() => setPage((p) => p + 1)}
                   disabled={!meta.hasNextPage}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer ${meta.hasNextPage
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer ${
+                    meta.hasNextPage
                       ? "bg-[#2e3675] text-white hover:bg-[#1d2567]"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
+                  }`}
                 >
                   Next
                 </button>

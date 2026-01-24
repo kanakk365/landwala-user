@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/store/authStore";
-import { Bell, UserCircle } from "lucide-react";
+import { Bell, UserCircle, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Header() {
@@ -70,6 +70,12 @@ export default function Header() {
         <div className="flex items-center gap-6">
           {mounted && isAuthenticated ? (
             <>
+              <Link
+                href="/wishlist"
+                className="text-[#1d2567] hover:text-[#f7ae49] transition-colors"
+              >
+                <Heart className="w-7 h-7" />
+              </Link>
               <button className="text-[#1d2567] hover:text-[#f7ae49] transition-colors relative">
                 <Bell className="w-7 h-7" />
                 <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>

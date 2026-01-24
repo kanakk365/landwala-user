@@ -99,7 +99,10 @@ export default function PropertiesSection({
               >
                 {/* Image */}
                 <img
-                  src={prop.images?.[0] || "https://placehold.co/600x400/556655/FFFFFF?text=Property"}
+                  src={
+                    prop.images?.[0] ||
+                    "https://placehold.co/600x400/556655/FFFFFF?text=Property"
+                  }
                   alt={prop.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
