@@ -21,10 +21,20 @@ export default function PropertiesSection({
     const fetchProperties = async () => {
       try {
         setLoading(true);
-        const response = await propertiesApi.getProperties({
-          limit: 3,
-          isFeatured: isFeatured || undefined,
-        });
+        let response;
+
+        if (isFeatured) {
+          response = await propertiesApi.getFeaturedListings({
+            limit: 3,
+            page: 1,
+          });
+        } else {
+          response = await propertiesApi.getProperties({
+            limit: 3,
+            isFeatured: undefined,
+          });
+        }
+
         setProperties(response.data);
       } catch (err) {
         console.error("Error fetching properties:", err);

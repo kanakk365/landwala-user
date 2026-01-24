@@ -417,6 +417,14 @@ export const propertiesApi = {
     const response = await api.get(`/properties/latest-listings/${id}`);
     return response.data;
   },
+
+  getFeaturedListings: async (params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<PropertiesResponse> => {
+    const response = await api.get("/properties/featured-listings", { params });
+    return response.data;
+  },
 };
 
 // Enquiries API Types
