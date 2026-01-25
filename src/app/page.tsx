@@ -11,11 +11,11 @@ export default function Home() {
     <main className="min-h-screen bg-white font-sans text-gray-900">
       <Header />
       <Hero />
-      <Categories />
-      <PropertiesSection title="Explore Nearby Properties" />
-      <QuickActions />
+      <Categories id="categories" />
+      <PropertiesSection id="properties" title="Explore Nearby Properties" />
+      <QuickActions id="quick-actions" />
       <PropertiesSection title="Featured Listings" isFeatured={true} />
-      <Contact />
+      <Contact id="contact-us" />
       <Footer />
     </main>
   );

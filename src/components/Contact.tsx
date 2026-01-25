@@ -5,9 +5,9 @@ const ContactPicture = "/contact/Picture.png";
 const Vector14 = "/contact/Vector 14.svg";
 const Icons = "/contact/Icons.svg";
 
-function Contact() {
+function Contact({ id }: { id?: string }) {
   return (
-    <section className="py-24 px-6 sm:px-8 bg-white">
+    <section id={id} className="py-24 px-6 sm:px-8 bg-white">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         <div>
           <h2 className="text-4xl lg:text-5xl font-bold text-black mb-8">

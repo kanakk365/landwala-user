@@ -3,16 +3,33 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/store/authStore";
-import { Bell, UserCircle, Heart } from "lucide-react";
-import { useEffect, useState } from "react";
+import { UserCircle, Heart } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
 
 export default function Header() {
   const { isAuthenticated, user } = useAuthStore();
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleScroll = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+      if (pathname === "/") {
+        e.preventDefault();
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+          // Update URL without jump
+          window.history.pushState(null, "", `/#${id}`);
+        }
+      }
+    },
+    [pathname],
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-gray-100">
@@ -41,25 +58,30 @@ export default function Header() {
             Home
           </Link>
           <Link
-            href="/properties"
+            href="/#properties"
+            onClick={(e) => handleScroll(e, "properties")}
             className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
           >
             Properties
           </Link>
+
           <Link
-            href="/about"
+            href="/#categories"
+            onClick={(e) => handleScroll(e, "categories")}
             className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
           >
-            About us
+            Our Categories
           </Link>
           <Link
-            href="/team"
+            href="/#quick-actions"
+            onClick={(e) => handleScroll(e, "quick-actions")}
             className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
           >
-            Team
+            Quick Actions
           </Link>
           <Link
-            href="/contact"
+            href="/#contact-us"
+            onClick={(e) => handleScroll(e, "contact-us")}
             className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
           >
             Contact us
@@ -76,10 +98,7 @@ export default function Header() {
               >
                 <Heart className="w-7 h-7" />
               </Link>
-              <button className="text-[#1d2567] hover:text-[#f7ae49] transition-colors relative">
-                <Bell className="w-7 h-7" />
-                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-              </button>
+
               <Link
                 href="/profile"
                 className="text-[#1d2567] hover:text-[#f7ae49] transition-colors"

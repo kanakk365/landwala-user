@@ -98,9 +98,9 @@ const categories = [
   },
 ];
 
-export default function Categories() {
+export default function Categories({ id }: { id?: string }) {
   return (
-    <section className="py-16 max-w-7xl mx-auto bg-white">
+    <section id={id} className="py-16 max-w-7xl mx-auto bg-white">
       <div className="container mx-auto px-4 md:px-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-8">
           Explore our Categories

@@ -8,10 +8,12 @@ export default function PropertiesSection({
   title = "Explore Nearby Properties",
   showViewAll = true,
   isFeatured = false,
+  id,
 }: {
   title?: string;
   showViewAll?: boolean;
   isFeatured?: boolean;
+  id?: string;
 }) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ export default function PropertiesSection({
 
   if (loading) {
     return (
-      <section className="py-12 max-w-7xl mx-auto bg-white">
+      <section id={id} className="py-12 max-w-7xl mx-auto bg-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-semibold text-black">{title}</h2>
@@ -69,7 +71,7 @@ export default function PropertiesSection({
 
   if (error) {
     return (
-      <section className="py-12 max-w-7xl mx-auto bg-white">
+      <section id={id} className="py-12 max-w-7xl mx-auto bg-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-semibold text-black">{title}</h2>
@@ -81,7 +83,7 @@ export default function PropertiesSection({
   }
 
   return (
-    <section className="py-12 max-w-7xl mx-auto bg-white">
+    <section id={id} className="py-12 max-w-7xl mx-auto bg-white">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-semibold text-black">{title}</h2>
