@@ -6,7 +6,13 @@ import Header from "@/components/Header";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import SuccessModal from "@/components/SuccessModal";
-import { layoutsApi, Layout, LayoutSlot, enquiriesApi, wishlistApi } from "@/lib/api";
+import {
+  layoutsApi,
+  Layout,
+  LayoutSlot,
+  enquiriesApi,
+  wishlistApi,
+} from "@/lib/api";
 import {
   MapPin,
   Loader2,
@@ -198,10 +204,12 @@ export default function LayoutDetailsPage() {
         setSelectedPlotNumber(plotLabel);
 
         // Find the corresponding slot from the layout data
-        // Match by sectionTitle (case-insensitive)
+        // Match by plotNumber (case-insensitive) as it lines up with SVG labels
         if (layout && plotLabel) {
           const slot = layout.slots.find(
-            (s) => s.sectionTitle.toLowerCase().trim() === plotLabel,
+            (s) =>
+              s.plotNumber.toString().toLowerCase().trim() ===
+              plotLabel.toLowerCase().trim(),
           );
           if (slot) {
             setSelectedSlot(slot);
