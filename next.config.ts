@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "placehold.co",
       },
+      {
+        protocol: "https",
+        hostname: "landwala.s3.ap-south-1.amazonaws.com",
+      },
     ],
   },
 };

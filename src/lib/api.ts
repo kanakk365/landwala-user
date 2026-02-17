@@ -627,3 +627,27 @@ export const issueReportsApi = {
     return response.data;
   },
 };
+
+// Banners API Types
+export interface Banner {
+  id: string;
+  type: "PROPERTY" | "LAYOUT";
+  propertyId?: string;
+  layoutId?: string;
+  displayOrder: number;
+  isActive: boolean;
+  property?: Property;
+  layout?: Layout;
+}
+
+export interface BannersResponse {
+  data: Banner[];
+  meta: PropertiesMeta;
+}
+
+export const bannersApi = {
+  getBanners: async (): Promise<BannersResponse> => {
+    const response = await api.get("/banners");
+    return response.data;
+  },
+};

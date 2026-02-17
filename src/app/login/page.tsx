@@ -138,7 +138,7 @@ export default function LoginPage() {
             >
               Welcome.
             </h2>
-            <h1 className="bg-gradient-to-b from-[#2563EB] to-[#101828] bg-clip-text text-transparent text-4xl md:text-6xl font-extrabold leading-tight">
+            <h1 className="bg-linear-to-b from-[#2563EB] to-[#101828] bg-clip-text text-transparent text-4xl md:text-6xl font-extrabold leading-tight">
               Find the right property on your own choices
             </h1>
           </div>

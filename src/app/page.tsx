@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import Banners from "@/components/Banners";
 import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
 import PropertiesSection from "@/components/PropertiesSection";
@@ -10,6 +11,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white font-sans text-gray-900">
       <Header />
+      <Banners />
       <Hero />
       <Categories id="categories" />
       <PropertiesSection id="properties" title="Explore Nearby Properties" />
