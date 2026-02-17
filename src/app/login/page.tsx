@@ -1,5 +1,6 @@
 "use client";
 
+import { AxiosError } from "axios";
 import Header from "@/components/Header";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
@@ -18,19 +19,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [mounted, setMounted] = useState(false);
-
-  // Set mounted flag after hydration
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Redirect if already authenticated (and user is not new)
   useEffect(() => {
-    if (mounted && isAuthenticated && user && !user.isNewUser) {
+    if (isAuthenticated && !user?.isNewUser) {
       router.push("/");
     }
-  }, [mounted, isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -45,20 +40,11 @@ export default function LoginPage() {
       const response = await authApi.googleAuth(idToken);
 
       // Store user and tokens in Zustand store
-      login(
-        {
-          id: response.user.id,
-          email: response.user.email,
-          name: response.user.name,
-          profilePicture: response.user.profilePicture,
-          isNewUser: response.user.isNewUser,
-        },
-        {
-          accessToken: response.tokens.accessToken,
-          refreshToken: response.tokens.refreshToken,
-          expiresIn: response.tokens.expiresIn,
-        },
-      );
+      login(response.user, {
+        accessToken: response.tokens.accessToken,
+        refreshToken: response.tokens.refreshToken,
+        expiresIn: response.tokens.expiresIn,
+      });
 
       // Check if user needs to complete registration
       if (response.user.isNewUser) {
@@ -66,15 +52,19 @@ export default function LoginPage() {
       } else {
         router.push("/");
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Google login error:", err);
-      setError("Failed to sign in with Google. Please try again.");
+      const error = err as AxiosError<{ message: string }>;
+      setError(
+        error.response?.data?.message ||
+          "Failed to sign in with Google. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -88,30 +78,22 @@ export default function LoginPage() {
 
       const response = await authApi.login({ email, password });
 
-      login(
-        {
-          id: response.user.id,
-          email: response.user.email,
-          name: response.user.name,
-          profilePicture: response.user.profilePicture,
-          isNewUser: response.user.isNewUser,
-        },
-        {
-          accessToken: response.tokens.accessToken,
-          refreshToken: response.tokens.refreshToken,
-          expiresIn: response.tokens.expiresIn,
-        },
-      );
+      login(response.user, {
+        accessToken: response.tokens.accessToken,
+        refreshToken: response.tokens.refreshToken,
+        expiresIn: response.tokens.expiresIn,
+      });
 
       if (response.user.isNewUser) {
         router.push("/signup?complete=true");
       } else {
         router.push("/");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login error:", err);
+      const error = err as AxiosError<{ message: string }>;
       setError(
-        err.response?.data?.message || "Failed to login. Please try again.",
+        error.response?.data?.message || "Failed to login. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -157,7 +139,7 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <form onSubmit={handleEmailLogin}>
+              <form onSubmit={handleLogin}>
                 {/* Email Input */}
                 <div className="mb-6">
                   <label className="block text-gray-500 text-sm mb-2 font-medium">

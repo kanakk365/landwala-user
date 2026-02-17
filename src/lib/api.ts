@@ -138,7 +138,10 @@ export const authApi = {
     return response.data;
   },
 
-  verifyOtp: async (data: { email: string; otp: string }): Promise<any> => {
+  verifyOtp: async (data: {
+    email: string;
+    otp: string;
+  }): Promise<{ message: string }> => {
     const response = await api.post("/auth/verify-otp", data);
     return response.data;
   },
@@ -548,7 +551,7 @@ export interface PropertySubmissionData {
 
 export interface PropertySubmissionResponse {
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 export const propertySubmissionApi = {
