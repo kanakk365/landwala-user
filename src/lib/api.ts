@@ -654,3 +654,19 @@ export const bannersApi = {
     return response.data;
   },
 };
+
+// Contact Us API Types
+export interface ContactUsData {
+  title: string;
+  description: string;
+  phone: string;
+  location: string;
+  email: string;
+}
+
+export const contactUsApi = {
+  submit: async (data: ContactUsData) => {
+    const response = await api.post("/contact", data);
+    return response.data;
+  },
+};
