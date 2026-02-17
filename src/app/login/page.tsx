@@ -2,7 +2,7 @@
 
 import Header from "@/components/Header";
 import Link from "next/link";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithPopup } from "firebase/auth";
@@ -12,11 +12,11 @@ import { useAuthStore } from "@/store/authStore";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated, setLoading, isLoading, user, logout } =
+  const { login, isAuthenticated, setLoading, isLoading, user } =
     useAuthStore();
 
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
           accessToken: response.tokens.accessToken,
           refreshToken: response.tokens.refreshToken,
           expiresIn: response.tokens.expiresIn,
-        }
+        },
       );
 
       // Check if user needs to complete registration
@@ -74,16 +74,48 @@ export default function LoginPage() {
     }
   };
 
-  const handlePhoneLogin = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!phoneNumber || !otp) {
-      setError("Please enter both phone number and OTP");
+    if (!email || !password) {
+      setError("Please enter both email and password");
       return;
     }
 
-    // Phone/OTP login would be implemented here
-    setError("Phone login coming soon. Please use Google login.");
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await authApi.login({ email, password });
+
+      login(
+        {
+          id: response.user.id,
+          email: response.user.email,
+          name: response.user.name,
+          profilePicture: response.user.profilePicture,
+          isNewUser: response.user.isNewUser,
+        },
+        {
+          accessToken: response.tokens.accessToken,
+          refreshToken: response.tokens.refreshToken,
+          expiresIn: response.tokens.expiresIn,
+        },
+      );
+
+      if (response.user.isNewUser) {
+        router.push("/signup?complete=true");
+      } else {
+        router.push("/");
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(
+        err.response?.data?.message || "Failed to login. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -125,59 +157,48 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <form onSubmit={handlePhoneLogin}>
-                {/* Phone Number */}
+              <form onSubmit={handleEmailLogin}>
+                {/* Email Input */}
                 <div className="mb-6">
                   <label className="block text-gray-500 text-sm mb-2 font-medium">
-                    Phone Number
+                    Email Address
                   </label>
-                  <div className="flex w-full border border-gray-200 rounded-lg overflow-hidden focus-within:border-[#2D336B] transition-colors bg-white">
-                    <div className="flex items-center px-3 border-r border-gray-200 gap-1 bg-gray-50 cursor-pointer">
-                      {/* Flag Placeholder */}
-                      <div className="w-5 h-5 rounded-full overflow-hidden flex flex-col justify-center relative border border-gray-200">
-                        <div className="bg-white h-1/3 w-full"></div>
-                        <div className="bg-blue-600 h-1/3 w-full"></div>
-                        <div className="bg-red-600 h-1/3 w-full"></div>
-                      </div>
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="+234 7789900987"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="flex-1 px-4 py-3 text-gray-700 outline-none font-medium placeholder:text-gray-400"
-                    />
-                  </div>
-                </div>
-
-                {/* OTP Input */}
-                <div className="mb-8">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-gray-500 text-sm font-medium">
-                      Enter OTP
-                    </label>
-                    <button
-                      type="button"
-                      className="text-blue-500 text-sm font-medium hover:text-blue-700"
-                    >
-                      Resend
-                    </button>
-                  </div>
                   <input
-                    type="text"
-                    placeholder="Enter valid OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-[#2D336B] transition-colors text-gray-700 placeholder:text-gray-400 bg-white"
                   />
+                </div>
+
+                {/* Password Input */}
+                <div className="mb-8">
+                  <label className="block text-gray-500 text-sm mb-2 font-medium">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 outline-none focus:border-[#2D336B] transition-colors text-gray-700 placeholder:text-gray-400 bg-white"
+                  />
+                  <div className="text-right mt-2">
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm text-blue-500 hover:text-blue-700 font-medium"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
                 </div>
 
                 {/* Login Button */}
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg shadow-sm transition-colors mb-6 flex items-center justify-center gap-2"
+                  className="w-full bg-[#1d2567] hover:bg-[#151b4d] disabled:bg-gray-400 text-white font-bold py-3 rounded-lg shadow-sm transition-colors mb-6 flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
                     <>
@@ -220,7 +241,7 @@ export default function LoginPage() {
 
               <div className="text-center">
                 <span className="text-gray-400 text-sm">
-                  Don't Have An Account?{" "}
+                  Don&apos;t Have An Account?{" "}
                 </span>
                 <Link
                   href="/signup"

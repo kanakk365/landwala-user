@@ -66,6 +66,9 @@ interface RegisterResponse {
     countryCode: string;
     location: string;
     employment: string;
+    occupationOther?: string;
+    gender?: string;
+    dateOfBirth?: string;
   };
   message?: string;
 }
@@ -119,12 +122,36 @@ export const authApi = {
     return response.data;
   },
 
+  login: async (credentials: {
+    email: string;
+    password: string;
+  }): Promise<GoogleAuthResponse> => {
+    const response = await api.post("/auth/login", credentials);
+    return response.data;
+  },
+
+  signup: async (credentials: {
+    email: string;
+    password: string;
+  }): Promise<{ message: string }> => {
+    const response = await api.post("/auth/signup", credentials);
+    return response.data;
+  },
+
+  verifyOtp: async (data: { email: string; otp: string }): Promise<any> => {
+    const response = await api.post("/auth/verify-otp", data);
+    return response.data;
+  },
+
   register: async (userData: {
     fullName: string;
     phoneNumber: string;
     countryCode: string;
     location: string;
     employment: string;
+    occupationOther?: string;
+    gender: string;
+    dateOfBirth: string;
   }): Promise<RegisterResponse> => {
     const response = await api.post("/auth/register", userData);
     return response.data;

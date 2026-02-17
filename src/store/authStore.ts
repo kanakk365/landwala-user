@@ -12,6 +12,9 @@ interface User {
   countryCode?: string;
   location?: string;
   employment?: string;
+  occupationOther?: string;
+  gender?: string;
+  dateOfBirth?: string;
 }
 
 interface Tokens {
@@ -89,6 +92,6 @@ export const useAuthStore = create<AuthState>()(
         tokens: state.tokens,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );
