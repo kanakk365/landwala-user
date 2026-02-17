@@ -670,3 +670,24 @@ export const contactUsApi = {
     return response.data;
   },
 };
+
+// Search API Types
+export interface SearchResult {
+  type: "property" | "layout";
+  property?: Property;
+  layout?: Layout;
+}
+
+export interface SearchResponse {
+  data: SearchResult[];
+  meta: PropertiesMeta;
+}
+
+export const searchApi = {
+  search: async (query: string): Promise<SearchResponse> => {
+    const response = await api.get("/search", {
+      params: { search: query },
+    });
+    return response.data;
+  },
+};

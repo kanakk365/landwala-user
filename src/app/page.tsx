@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Banners from "@/components/Banners";
 import Hero from "@/components/Hero";
+import SearchSection from "@/components/SearchSection";
 import Categories from "@/components/Categories";
 import PropertiesSection from "@/components/PropertiesSection";
 import QuickActions from "@/components/QuickActions";
@@ -13,6 +14,7 @@ export default function Home() {
       <Header />
       <Banners />
       <Hero />
+      <SearchSection />
       <Categories id="categories" />
       <PropertiesSection id="properties" title="Explore Nearby Properties" />
       <QuickActions id="quick-actions" />
