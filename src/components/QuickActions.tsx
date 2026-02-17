@@ -109,6 +109,69 @@ const actions = [
     label: "Legal Verification",
     bg: "bg-[#111a61]",
   },
+  {
+    icon: (
+      <svg
+        width="41"
+        height="41"
+        viewBox="0 0 41 41"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3 3H13M3 13H13M3 23H13M3 33H13M23 3H33M23 13H33M23 23H33M23 33H33"
+          stroke="white"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+    label: "Layouts",
+    bg: "bg-[#111a61]",
+  },
+  {
+    icon: (
+      <svg
+        width="27"
+        height="27"
+        viewBox="0 0 27 27"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M19.5 3H7.5C6.67157 3 6 3.67157 6 4.5V22.5C6 23.3284 6.67157 24 7.5 24H19.5C20.3284 24 21 23.3284 21 22.5V4.5C21 3.67157 20.3284 3 19.5 3Z"
+          stroke="white"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M10 8H17"
+          stroke="white"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M10 12H17"
+          stroke="white"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M10 16H14"
+          stroke="white"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+    label: "Land Registration",
+    bg: "bg-[#111a61]",
+  },
 ];
 
 export default function QuickActions({ id }: { id?: string }) {
@@ -152,6 +215,22 @@ export default function QuickActions({ id }: { id?: string }) {
             if (action.label === "Legal Verification") {
               return (
                 <Link href="/legal-verification" key={index}>
+                  {Content}
+                </Link>
+              );
+            }
+
+            if (action.label === "Layouts") {
+              return (
+                <Link href="/layouts" key={index}>
+                  {Content}
+                </Link>
+              );
+            }
+
+            if (action.label === "Land Registration") {
+              return (
+                <Link href="/land-registration" key={index}>
                   {Content}
                 </Link>
               );
