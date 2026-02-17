@@ -3,6 +3,7 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
+import { Icon } from "@iconify/react";
 
 // Assets
 const Vector14 = "/contact/Vector 14.svg";
@@ -118,6 +119,32 @@ function Hero() {
                 Creating quality urban lifestyles, <br />
                 building stronger communities.
               </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut", delay: 1 }}
+                className="flex flex-col sm:flex-row gap-4"
+              >
+                <button className="flex items-center gap-3 bg-white text-black px-5 py-3 rounded-xl hover:bg-gray-100 transition-all hover:scale-105 shadow-lg min-w-[180px]">
+                  <Icon icon="logos:google-play-icon" width="30" height="30" />
+                  <div className="flex flex-col items-start leading-none">
+                    <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
+                      Get it on
+                    </span>
+                    <span className="text-xl font-bold">Google Play</span>
+                  </div>
+                </button>
+                <button className="flex items-center gap-3 bg-white text-black px-5 py-3 rounded-xl hover:bg-gray-100 transition-all hover:scale-105 shadow-lg min-w-[180px]">
+                  <Icon icon="logos:apple" width="30" height="30" />
+                  <div className="flex flex-col items-start leading-none">
+                    <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide">
+                      Download on the
+                    </span>
+                    <span className="text-xl font-bold">App Store</span>
+                  </div>
+                </button>
+              </motion.div>
             </div>
           </div>
 
