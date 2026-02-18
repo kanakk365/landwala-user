@@ -15,7 +15,10 @@ import {
   Calendar,
   MapPin,
   Loader2,
+  ChevronRight,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import {
   landRegistrationApi,
   LandRegistrationEnquiry,
@@ -24,7 +27,79 @@ import {
   loanApi,
   LoanApplicationResponse,
   issueReportsApi,
+  wishlistApi,
+  WishlistItem,
 } from "@/lib/api";
+
+const WishlistCard = ({ item }: { item: WishlistItem }) => {
+  const isLayout = item.type === "LAYOUT" && item.layout;
+  // const isProperty = item.type === "PROPERTY" && item.property; // Removed unused variable
+
+  const details = isLayout ? item.layout : item.property;
+
+  if (!details) return null;
+
+  const title = details.title;
+  // Handle different data structures for layout vs property
+  const location = isLayout
+    ? (details as any).location
+    : (details as any).locationAddress ||
+      `${(details as any).city}, ${(details as any).state}`;
+
+  const priceRange = details.priceRange;
+  const image = isLayout
+    ? (details as any).imageUrl
+    : (details as any).images?.[0] || "/placeholder-image.jpg"; // Add fallback
+
+  const typeLabel = isLayout ? "Layout" : "Property";
+  const linkHref = isLayout
+    ? `/layouts/${details.id}`
+    : `/property-details/${details.id}`;
+
+  return (
+    <div className="bg-white rounded-3xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col md:flex-row items-center gap-6 relative">
+      {/* Image Container */}
+      <div className="relative w-full md:w-[200px] h-48 md:h-36 shrink-0">
+        <Image
+          src={image}
+          alt={title}
+          fill
+          className="object-cover rounded-2xl"
+          unoptimized
+        />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col justify-center items-start w-full">
+        <h3 className="text-xl font-bold text-[#1d2567] mb-2">{title}</h3>
+        <p className="text-gray-500 mb-4 text-sm">{location}</p>
+
+        <p className="font-bold text-[#1d2567] text-base">
+          {typeLabel} | {priceRange}
+        </p>
+      </div>
+
+      {/* Action Button */}
+      <div className="hidden md:flex pr-6">
+        <Link
+          href={linkHref}
+          className="w-10 h-10 bg-[#1d2567] rounded-full flex items-center justify-center text-white hover:bg-[#2e3675] transition-colors"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </Link>
+      </div>
+
+      <div className="md:hidden w-full flex justify-end">
+        <Link
+          href={linkHref}
+          className="w-10 h-10 bg-[#1d2567] rounded-full flex items-center justify-center text-white hover:bg-[#2e3675] transition-colors"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </Link>
+      </div>
+    </div>
+  );
+};
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -41,6 +116,7 @@ export default function ProfilePage() {
   const [loanApplications, setLoanApplications] = useState<
     LoanApplicationResponse[]
   >([]);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Report Bug State
@@ -79,6 +155,18 @@ export default function ProfilePage() {
           // Add other fetches here as needed
         } catch (err) {
           console.error(`Failed to fetch data for ${subTab}`, err);
+        } finally {
+          setLoading(false);
+        }
+      } else if (activeTab === "Wishlist" && isAuthenticated) {
+        setLoading(true);
+        try {
+          const response = await wishlistApi.get({ page: 1, limit: 100 });
+          if (response && response.data) {
+            setWishlistItems(response.data);
+          }
+        } catch (err) {
+          console.error("Failed to fetch wishlist", err);
         } finally {
           setLoading(false);
         }
@@ -496,9 +584,42 @@ export default function ProfilePage() {
               </div>
             )}
 
+            {activeTab === "Wishlist" && (
+              <div className="w-full">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                  My Wishlist
+                </h3>
+                {loading ? (
+                  <div className="flex justify-center items-center py-20">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#1d2567]" />
+                  </div>
+                ) : wishlistItems.length > 0 ? (
+                  <div className="space-y-4">
+                    {wishlistItems.map((item) => (
+                      <WishlistCard key={item.id} item={item} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <Heart className="w-16 h-16 mb-4 opacity-50" />
+                    <p className="text-lg font-medium">
+                      Your wishlist is empty
+                    </p>
+                    <Link
+                      href="/properties"
+                      className="mt-4 text-[#1d2567] font-medium hover:underline"
+                    >
+                      Browse Properties
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab !== "Edit Profile" &&
               activeTab !== "My Requests" &&
-              activeTab !== "Report a Bug" && (
+              activeTab !== "Report a Bug" &&
+              activeTab !== "Wishlist" && (
                 <div className="flex flex-col items-center justify-center h-full text-gray-400">
                   <FileText className="w-16 h-16 mb-4 opacity-50" />
                   <p className="text-lg font-medium">

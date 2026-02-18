@@ -8,6 +8,8 @@ import QuickActions from "@/components/QuickActions";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
+import DownloadApp from "@/components/DownloadApp";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-white font-sans text-gray-900">
@@ -20,6 +22,7 @@ export default function Home() {
       <QuickActions id="quick-actions" />
       <PropertiesSection title="Featured Listings" isFeatured={true} />
       <Contact id="contact-us" />
+      <DownloadApp />
       <Footer />
     </main>
   );
