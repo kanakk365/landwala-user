@@ -1,129 +1,283 @@
 "use client";
-
-import Link from "next/link";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
-import { UserCircle, Heart } from "lucide-react";
+import { UserCircle, Heart, Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [mounted, setMounted] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+  const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleScroll = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-      if (pathname === "/") {
-        e.preventDefault();
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
-          // Update URL without jump
-          window.history.pushState(null, "", `/#${id}`);
-        }
-      }
-    },
-    [pathname],
+  const sections = useMemo(
+    () => [
+      { id: "home", label: "Home", href: "/" },
+      { id: "categories", label: "Categories", href: "/#categories" },
+      { id: "properties", label: "Properties", href: "/#properties" },
+      { id: "quick-actions", label: "Quick Actions", href: "/#quick-actions" },
+      { id: "contact-us", label: "Contact us", href: "/#contact-us" },
+    ],
+    [],
   );
 
+  const scrollToSection = (sectionId: string) => {
+    // If not on home page and clicking a hash link, let default Link behavior handle it
+    // Or handle navigation separately if needed.
+    // Assuming simple scroll for now if on home page.
+    if (pathname !== "/" && sectionId !== "home") return;
+
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerHeight = 100; // Approximate header height + offset
+      const elementPosition =
+        element.getBoundingClientRect().top + window.scrollY - headerHeight;
+
+      window.scrollTo({
+        top: elementPosition,
+        behavior: "smooth",
+      });
+    } else if (sectionId === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    sectionId: string,
+  ) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      scrollToSection(sectionId);
+      setActiveSection(sectionId);
+      setMobileOpen(false);
+      // Update URL hash without jumping
+      if (sectionId !== "home") {
+        window.history.pushState(null, "", `/#${sectionId}`);
+      } else {
+        window.history.pushState(null, "", "/");
+      }
+    } else {
+      setMobileOpen(false);
+    }
+  };
+
+  // Scroll spy to update active section
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 120; // Offset
+
+      // Default to home if at top
+      if (window.scrollY < 100) {
+        setActiveSection("home");
+        return;
+      }
+
+      for (const section of sections) {
+        if (section.id === "home") continue;
+        const element = document.getElementById(section.id);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (
+            scrollPosition >= offsetTop &&
+            scrollPosition < offsetTop + offsetHeight
+          ) {
+            setActiveSection(section.id);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [sections]);
+
   return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-gray-100">
-      <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/logo.png"
-            alt="LandWalaa Logo"
-            width={40}
-            height={40}
-            className="object-contain"
-          />
-          <span className="text-2xl font-bold tracking-tight">
+    <>
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="bg-gradient-to-r from-blue-200 via-blue-50 to-white px-6 sm:px-8 py-3 flex justify-between items-center fixed top-4 left-4 right-4 z-50 rounded-full shadow-lg max-w-[1400px] mx-auto"
+      >
+        {/* Logo Section */}
+        <Link
+          href="/"
+          onClick={(e) => handleNavClick(e, "home")}
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity duration-300 focus:outline-none"
+        >
+          <div className="relative w-10 h-10 sm:w-12 sm:h-12">
+            <Image
+              src="/logo.png"
+              alt="LandWalaa Logo"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="text-xl sm:text-2xl font-bold -ml-1">
             <span className="text-[#1d2567]">Land</span>
             <span className="text-[#f7ae49]">Walaa</span>
-          </span>
+          </div>
         </Link>
 
-        {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
-          <Link
-            href="/"
-            className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors border-b-2 border-transparent hover:border-[#f7ae49]"
-          >
-            Home
-          </Link>
-          <Link
-            href="/#properties"
-            onClick={(e) => handleScroll(e, "properties")}
-            className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
-          >
-            Properties
-          </Link>
-
-          <Link
-            href="/#categories"
-            onClick={(e) => handleScroll(e, "categories")}
-            className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
-          >
-            Our Categories
-          </Link>
-          <Link
-            href="/#quick-actions"
-            onClick={(e) => handleScroll(e, "quick-actions")}
-            className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
-          >
-            Quick Actions
-          </Link>
-          <Link
-            href="/#contact-us"
-            onClick={(e) => handleScroll(e, "contact-us")}
-            className="text-lg font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
-          >
-            Contact us
-          </Link>
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex gap-6 xl:gap-8">
+          {sections.map((section) => (
+            <Link
+              key={section.id}
+              href={section.href}
+              onClick={(e) => handleNavClick(e, section.id)}
+              className={`font-medium text-base transition-all duration-300 relative ${
+                activeSection === section.id
+                  ? "text-[#f7ae49]"
+                  : "text-[#1d2567] hover:text-[#f7ae49]"
+              }`}
+            >
+              {section.label}
+              {activeSection === section.id && (
+                <motion.div
+                  layoutId="activeSection"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#f7ae49]"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+            </Link>
+          ))}
         </nav>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-6">
+        {/* Action Buttons (Desktop) */}
+        <div className="hidden lg:flex items-center gap-4">
           {mounted && isAuthenticated ? (
             <>
               <Link
                 href="/wishlist"
-                className="text-[#1d2567] hover:text-[#f7ae49] transition-colors"
+                className="text-[#1d2567] hover:text-[#f7ae49] transition-colors p-2"
               >
-                <Heart className="w-7 h-7" />
+                <Heart className="w-6 h-6" />
               </Link>
 
               <Link
                 href="/profile"
-                className="text-[#1d2567] hover:text-[#f7ae49] transition-colors"
+                className="text-[#1d2567] hover:text-[#f7ae49] transition-colors p-2"
               >
-                <UserCircle className="w-8 h-8" />
+                <UserCircle className="w-7 h-7" />
               </Link>
             </>
           ) : (
-            <>
+            <div className="flex items-center gap-3">
               <Link
                 href="/login"
-                className="text-BASE font-medium text-[#1d2567] hover:text-[#f7ae49] transition-colors"
+                className="bg-transparent border-none text-[#1d2567] font-medium text-base px-3 py-2 hover:text-[#f7ae49] transition-colors duration-300"
               >
                 Log In
               </Link>
               <Link
                 href="/signup"
-                className="px-5 py-1 text-BASE font-medium text-[#1d2567] border-2 border-[#1d2567] rounded-lg hover:bg-[#1d2567] hover:text-white transition-colors"
+                className="bg-white border text-[#1d2567] border-[#1d2567] font-medium text-base px-5 py-2 rounded-lg hover:bg-[#1d2567] hover:text-white transition-all duration-300"
               >
                 Sign Up Now
               </Link>
-            </>
+            </div>
           )}
         </div>
-      </div>
-    </header>
+
+        {/* Mobile Hamburger */}
+        <div className="flex items-center gap-4 lg:hidden">
+          {mounted && isAuthenticated && (
+            <Link
+              href="/profile"
+              className="text-[#1d2567] hover:text-[#f7ae49] transition-colors"
+            >
+              <UserCircle className="w-7 h-7" />
+            </Link>
+          )}
+          <button
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#1d2567]/20 text-[#1d2567] hover:bg-[#1d2567] hover:text-white transition-colors"
+            aria-label="Open menu"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+      </motion.header>
+
+      {/* spacer to prevent content overlap if header was static but here it's fixed so we might need padding on body or top section. 
+         Since the design has "fixed top-4", the top of the page content will be behind it. 
+         Usually we add a spacer or padding to the layout. Ideally the layout handles this.
+      */}
+
+      {/* Mobile Menu Panel */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="lg:hidden bg-white/95 backdrop-blur-md border border-[#1d2567]/10 px-6 py-6 fixed top-24 left-4 right-4 z-40 rounded-2xl shadow-xl"
+          >
+            <div className="flex flex-col gap-4">
+              {sections.map((section) => (
+                <Link
+                  key={section.id}
+                  href={section.href}
+                  onClick={(e) => handleNavClick(e, section.id)}
+                  className={`py-2 text-base font-medium rounded-lg px-2 transition-colors ${
+                    activeSection === section.id
+                      ? "text-[#f7ae49] bg-gray-50"
+                      : "text-[#1d2567] hover:text-[#f7ae49]"
+                  }`}
+                >
+                  {section.label}
+                </Link>
+              ))}
+
+              {mounted && !isAuthenticated && (
+                <div className="flex gap-3 pt-4 mt-2 border-t border-gray-100">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 bg-transparent border border-[#1d2567] text-[#1d2567] font-medium text-base px-4 py-2.5 rounded-lg hover:bg-[#1d2567] hover:text-white transition-colors text-center"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 bg-[#1d2567] text-white font-medium text-base px-4 py-2.5 rounded-lg hover:bg-[#2e3675] transition-colors text-center"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+
+              {mounted && isAuthenticated && (
+                <Link
+                  href="/wishlist"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 py-2 text-base font-medium text-[#1d2567] hover:text-[#f7ae49]"
+                >
+                  <Heart className="w-5 h-5" />
+                  My Wishlist
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
