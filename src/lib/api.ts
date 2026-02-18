@@ -622,11 +622,26 @@ export const wishlistApi = {
 export interface IssueReportData {
   title: string;
   description: string;
+  images?: File[];
 }
 
 export const issueReportsApi = {
   submit: async (data: IssueReportData) => {
-    const response = await api.post("/issue-reports", data);
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("description", data.description);
+
+    if (data.images && data.images.length > 0) {
+      data.images.forEach((file) => {
+        formData.append("images", file);
+      });
+    }
+
+    const response = await api.post("/issue-reports", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   },
 };

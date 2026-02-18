@@ -23,6 +23,7 @@ import {
   LandProtectionRequest,
   loanApi,
   LoanApplicationResponse,
+  issueReportsApi,
 } from "@/lib/api";
 
 export default function ProfilePage() {
@@ -41,6 +42,13 @@ export default function ProfilePage() {
     LoanApplicationResponse[]
   >([]);
   const [loading, setLoading] = useState(false);
+
+  // Report Bug State
+  const [reportTitle, setReportTitle] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportImages, setReportImages] = useState<File[]>([]);
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportSuccess, setReportSuccess] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -85,6 +93,33 @@ export default function ProfilePage() {
     router.push("/login");
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setReportImages(Array.from(e.target.files));
+    }
+  };
+
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setReportSubmitting(true);
+    try {
+      await issueReportsApi.submit({
+        title: reportTitle,
+        description: reportDescription,
+        images: reportImages,
+      });
+      setReportSuccess(true);
+      setReportTitle("");
+      setReportDescription("");
+      setReportImages([]);
+      setTimeout(() => setReportSuccess(false), 3000);
+    } catch (error) {
+      console.error("Failed to submit report", error);
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
+
   const menuItems = [
     { icon: UserCircle, label: "Edit Profile" },
     { icon: FileText, label: "My Requests" },
@@ -111,7 +146,7 @@ export default function ProfilePage() {
     title: string,
     subtitle: string,
     footerText: string,
-    id: string
+    id: string,
   ) => (
     <div
       key={id}
@@ -150,8 +185,8 @@ export default function ProfilePage() {
               req.landLocation || "Land Protection Request",
               `${req.landArea || "N/A"} . ${req.id.substring(0, 8)}`,
               `Submitted On ${new Date(req.createdAt).toLocaleDateString()}`,
-              req.id
-            )
+              req.id,
+            ),
           )
         ) : (
           <EmptyState message="No land protection requests found" />
@@ -164,8 +199,8 @@ export default function ProfilePage() {
               enq.propertyTitle || "Land Registration Enquiry",
               `Ref: ${enq.id.substring(0, 8)}`,
               `Submitted On ${new Date(enq.createdAt).toLocaleDateString()}`,
-              enq.id
-            )
+              enq.id,
+            ),
           )
         ) : (
           <EmptyState message="No land registration enquiries found" />
@@ -176,11 +211,12 @@ export default function ProfilePage() {
           loanApplications.map((app) =>
             renderRequestCard(
               `${app.loanPurpose} Loan Application`,
-              `Amount: ₹${app.desiredAmount?.toLocaleString()} . ${app.loanTenureYears
+              `Amount: ₹${app.desiredAmount?.toLocaleString()} . ${
+                app.loanTenureYears
               } Years`,
               `Status: ${app.status}`,
-              app.id
-            )
+              app.id,
+            ),
           )
         ) : (
           <EmptyState message="No loan applications found" />
@@ -203,7 +239,6 @@ export default function ProfilePage() {
       <Header />
 
       <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
-
         <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
           {/* Sidebar */}
           <div className="w-full md:w-64 border-r border-gray-100 flex flex-col">
@@ -218,10 +253,11 @@ export default function ProfilePage() {
                 <button
                   key={item.label}
                   onClick={() => setActiveTab(item.label)}
-                  className={`w-full flex items-center gap-3 px-6 py-4 text-sm font-medium transition-colors relative ${activeTab === item.label
+                  className={`w-full flex items-center gap-3 px-6 py-4 text-sm font-medium transition-colors relative ${
+                    activeTab === item.label
                       ? "text-gray-900 bg-gray-50"
                       : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-                    }`}
+                  }`}
                 >
                   {activeTab === item.label && (
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1d2567]"></div>
@@ -347,10 +383,11 @@ export default function ProfilePage() {
                     <button
                       key={tab}
                       onClick={() => setSubTab(tab)}
-                      className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors relative ${subTab === tab
+                      className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors relative ${
+                        subTab === tab
                           ? "text-[#1d2567]"
                           : "text-gray-500 hover:text-gray-700"
-                        }`}
+                      }`}
                     >
                       {tab}
                       {subTab === tab && (
@@ -365,14 +402,110 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {activeTab !== "Edit Profile" && activeTab !== "My Requests" && (
-              <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                <FileText className="w-16 h-16 mb-4 opacity-50" />
-                <p className="text-lg font-medium">
-                  {activeTab} section coming soon
-                </p>
+            {activeTab === "Report a Bug" && (
+              <div className="max-w-2xl">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                  Report a Bug
+                </h3>
+
+                {reportSuccess && (
+                  <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-6 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5" />
+                    <span>
+                      Thank you for your report! We will look into it.
+                    </span>
+                  </div>
+                )}
+
+                <form onSubmit={handleReportSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Issue Title
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={reportTitle}
+                      onChange={(e) => setReportTitle(e.target.value)}
+                      className="w-full bg-[#f0f2f5] border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-[#1d2567]"
+                      placeholder="Brief summary of the issue"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      required
+                      value={reportDescription}
+                      onChange={(e) => setReportDescription(e.target.value)}
+                      rows={5}
+                      className="w-full bg-[#f0f2f5] border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-[#1d2567]"
+                      placeholder="Please describe what happened..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Screenshots (Optional)
+                    </label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors relative">
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <div className="flex flex-col items-center">
+                        <FileText className="w-8 h-8 text-gray-400 mb-2" />
+                        <span className="text-sm text-gray-500">
+                          {reportImages.length > 0
+                            ? `${reportImages.length} file(s) selected`
+                            : "Click or drag to upload screenshots"}
+                        </span>
+                      </div>
+                    </div>
+                    {reportImages.length > 0 && (
+                      <div className="mt-2 text-xs text-gray-500">
+                        {reportImages.map((file, idx) => (
+                          <span key={idx} className="block truncate">
+                            {file.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={reportSubmitting}
+                    className="bg-[#1d2567] text-white px-8 py-3 rounded-full font-medium hover:bg-[#151b4d] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {reportSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Report"
+                    )}
+                  </button>
+                </form>
               </div>
             )}
+
+            {activeTab !== "Edit Profile" &&
+              activeTab !== "My Requests" &&
+              activeTab !== "Report a Bug" && (
+                <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                  <FileText className="w-16 h-16 mb-4 opacity-50" />
+                  <p className="text-lg font-medium">
+                    {activeTab} section coming soon
+                  </p>
+                </div>
+              )}
           </div>
         </div>
       </main>

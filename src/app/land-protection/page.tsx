@@ -19,7 +19,6 @@ export default function LandProtectionPage() {
           >
             <ChevronLeft className="w-8 h-8 text-black" />
           </Link>
-          <h1 className="text-3xl font-medium text-black">Explore Plots</h1>
         </div>
 
         <div className="flex flex-col items-center text-center">
@@ -55,7 +54,7 @@ export default function LandProtectionPage() {
           <div className="bg-[#E9EBEF] rounded-2xl p-8 mb-6 w-full shadow-sm">
             <p className="text-black text-xl px-10 leading-relaxed">
               Get real-time monitoring, periodic inspections, and boundary
-              verification so your land stays secure even when you're far away.
+              verification so your land stays secure even when you&apos;re far away.
             </p>
           </div>
 
