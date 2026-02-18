@@ -11,6 +11,63 @@ const api = axios.create({
   },
 });
 
+export interface SubscriptionOrderResponse {
+  payment_session_id?: string;
+  paymentSessionId?: string;
+  order_id?: string;
+  orderId?: string;
+  cf_order_id?: string; // Sometimes returned as cf_order_id
+}
+
+export interface SubscriptionVerifyResponse {
+  status: string;
+  message?: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description: string;
+  amount: number;
+  currency: string;
+  duration: number; // in days maybe, or string like 'monthly'
+  interval: string; // 'week', 'month', 'year'
+  features: string[]; // assuming backend sends features list or we parse description
+}
+
+export const subscriptionPurchaseApi = {
+  getPlans: async (): Promise<{ data: SubscriptionPlan[] }> => {
+    const response = await api.get("/subscription-plans");
+    return response.data;
+  },
+
+  createOrder: async (subscriptionPlanId: string) => {
+    try {
+      const response = await api.post("/subscription-purchase/order", {
+        subscriptionPlanId,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Create Order Failed:",
+          JSON.stringify(error.response?.data || error.message, null, 2),
+        );
+      } else {
+        console.error("Create Order Failed:", error);
+      }
+      throw error;
+    }
+  },
+
+  verifyOrder: async (orderId: string) => {
+    const response = await api.get(
+      `/subscription-purchase/verify?order_id=${orderId}`,
+    );
+    return response.data;
+  },
+};
+
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const tokens = useAuthStore.getState().tokens;

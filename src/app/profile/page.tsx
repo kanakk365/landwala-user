@@ -29,27 +29,27 @@ import {
   issueReportsApi,
   wishlistApi,
   WishlistItem,
+  Layout,
+  Property,
 } from "@/lib/api";
 
 const WishlistCard = ({ item }: { item: WishlistItem }) => {
   const isLayout = item.type === "LAYOUT" && item.layout;
-  // const isProperty = item.type === "PROPERTY" && item.property; // Removed unused variable
-
   const details = isLayout ? item.layout : item.property;
 
   if (!details) return null;
 
-  const title = details.title;
+  const title = (details as Layout | Property).title;
   // Handle different data structures for layout vs property
   const location = isLayout
-    ? (details as any).location
-    : (details as any).locationAddress ||
-      `${(details as any).city}, ${(details as any).state}`;
+    ? (details as Layout).location
+    : (details as Property).locationAddress ||
+      `${(details as Property).city}, ${(details as Property).state}`;
 
-  const priceRange = details.priceRange;
+  const priceRange = (details as Layout | Property).priceRange;
   const image = isLayout
-    ? (details as any).imageUrl
-    : (details as any).images?.[0] || "/placeholder-image.jpg"; // Add fallback
+    ? (details as Layout).imageUrl
+    : (details as Property).images?.[0] || "/placeholder-image.jpg"; // Add fallback
 
   const typeLabel = isLayout ? "Layout" : "Property";
   const linkHref = isLayout
