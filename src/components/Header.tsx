@@ -30,14 +30,11 @@ export default function Header() {
   );
 
   const scrollToSection = (sectionId: string) => {
-    // If not on home page and clicking a hash link, let default Link behavior handle it
-    // Or handle navigation separately if needed.
-    // Assuming simple scroll for now if on home page.
     if (pathname !== "/" && sectionId !== "home") return;
 
     const element = document.getElementById(sectionId);
     if (element) {
-      const headerHeight = 100; // Approximate header height + offset
+      const headerHeight = 100; 
       const elementPosition =
         element.getBoundingClientRect().top + window.scrollY - headerHeight;
 
@@ -213,13 +210,6 @@ export default function Header() {
           </button>
         </div>
       </motion.header>
-
-      {/* spacer to prevent content overlap if header was static but here it's fixed so we might need padding on body or top section. 
-         Since the design has "fixed top-4", the top of the page content will be behind it. 
-         Usually we add a spacer or padding to the layout. Ideally the layout handles this.
-      */}
-
-      {/* Mobile Menu Panel */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div

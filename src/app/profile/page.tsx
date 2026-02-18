@@ -105,7 +105,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState("Edit Profile");
+  const [activeTab, setActiveTab] = useState("My Requests");
   const [subTab, setSubTab] = useState("Land protection");
 
   // Data states
@@ -209,12 +209,12 @@ export default function ProfilePage() {
   };
 
   const menuItems = [
-    { icon: UserCircle, label: "Edit Profile" },
     { icon: FileText, label: "My Requests" },
     { icon: Heart, label: "Wishlist" },
     { icon: ShieldCheck, label: "Terms of Use" },
     { icon: Lock, label: "Privacy Policy" },
     { icon: AlertCircle, label: "Report a Bug" },
+    { icon: UserCircle, label: "Edit Profile" },
   ];
 
   const requestTabs = [
@@ -326,7 +326,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Header />
 
-      <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+      <main className="flex-grow container mx-auto px-4 pt-32 pb-8 max-w-7xl">
         <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
           {/* Sidebar */}
           <div className="w-full md:w-64 border-r border-gray-100 flex flex-col">
