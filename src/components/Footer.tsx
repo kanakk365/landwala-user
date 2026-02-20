@@ -1,79 +1,129 @@
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import Icons from "../../public/Icons.svg";
+import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="bg-white py-16 border-t border-gray-100 relative max-w-7xl mx-auto">
-      {/* Decorative Plus Icon */}
-      <div className="absolute top-12 right-6 text-orange-400 text-xl font-light">
-        +
-      </div>
+    <footer className="relative overflow-hidden bg-[#050a24] pt-20 pb-10">
+      {/* Decorative icons on the left side */}
+      <Image
+        src={Icons}
+        alt=""
+        aria-hidden="true"
+        className="absolute left-0 top-20 w-32 md:w-40 lg:w-48 opacity-10 transform translate-x-4 md:translate-x-8 pointer-events-none"
+      />
 
-      <div className="container mx-auto px-6 md:px-12">
-        <div className="flex flex-col md:flex-row gap-20 md:gap-32 items-start">
-          {/* Company Column */}
-          <div className="flex flex-col gap-6">
-            <h4 className="font-bold text-gray-900 text-lg">Quick Links</h4>
-            <div className="flex flex-col gap-4 text-gray-600 text-base font-medium">
-              <Link href="/" className="hover:text-gray-900 transition-colors">
-                Home
-              </Link>
-              <Link
-                href="/#properties"
-                className="hover:text-gray-900 transition-colors"
-              >
-                Properties
-              </Link>
-              <Link
-                href="/#categories"
-                className="hover:text-gray-900 transition-colors"
-                scroll={true}
-              >
-                Our Categories
-              </Link>
-              <Link
-                href="/#quick-actions"
-                className="hover:text-gray-900 transition-colors"
-                scroll={true}
-              >
-                Quick Actions
-              </Link>
-              <Link
-                href="/#contact-us"
-                className="hover:text-gray-900 transition-colors"
-                scroll={true}
-              >
-                Contact Us
-              </Link>
-            </div>
+      {/* Linear gradient border at top */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#EF9E41] to-white opacity-80"></div>
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-8 mb-16">
+          {/* Section 1: Logo & Description */}
+          <div className="space-y-6">
+            <Link href="/" className="inline-block">
+              <span className="text-3xl md:text-4xl font-extrabold tracking-wide text-white">
+                Land<span className="text-[#EF9E41]">wala</span>
+              </span>
+            </Link>
+            <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+              Landwala is your trusted platform for buying and selling verified
+              open and agricultural plots. We prioritize transparency, legal
+              safety, and customer satisfaction in every transaction.
+            </p>
           </div>
 
-          {/* Follow Us Column */}
-          <div className="flex flex-col gap-6">
-            <h4 className="font-bold text-gray-900 text-lg">Follow us</h4>
-            <div className="flex gap-4">
-              <a
-                href="#"
-                className="hover:scale-110 transition-transform"
-                aria-label="Instagram"
-              >
-                <Icon icon="skill-icons:instagram" width="30" height="30" />
-              </a>
-              <a
-                href="#"
-                className="hover:scale-110 transition-transform"
-                aria-label="Facebook"
-              >
-                <Icon icon="logos:facebook" width="30" height="30" />
-              </a>
-              <a
-                href="#"
-                className="hover:scale-110 transition-transform"
-                aria-label="LinkedIn"
-              >
-                <Icon icon="devicon:linkedin" width="30" height="30" />
-              </a>
+          {/* Section 2: Quick Links */}
+          <div className="lg:pl-12">
+            <h3 className="text-[#EF9E41] font-bold text-lg mb-6">
+              Quick Links
+            </h3>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8">
+              {[
+                { name: "Home", href: "/" },
+                { name: "Properties", href: "/#properties" },
+                { name: "Our Categories", href: "/#categories" },
+                { name: "Quick Actions", href: "/#quick-actions" },
+                { name: "Contact Us", href: "/#contact-us" },
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link
+                    href={link.href}
+                    className="text-gray-300 hover:text-[#EF9E41] text-sm font-medium transition-colors duration-200 flex items-center gap-2 group"
+                  >
+                    <span className="w-1 h-1 bg-[#EF9E41] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Section 3: Social & Address */}
+          <div className="lg:pl-8 space-y-8">
+            {/* Social Media */}
+            <div>
+              <h3 className="text-[#EF9E41] font-bold text-lg mb-6">
+                Connect With Us
+              </h3>
+              <div className="flex gap-4">
+                <a
+                  href="#"
+                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#EF9E41] hover:border-[#EF9E41] hover:-translate-y-1 transition-all duration-300"
+                  aria-label="Instagram"
+                >
+                  <Icon icon="mdi:instagram" width="20" height="20" />
+                </a>
+                <a
+                  href="#"
+                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#EF9E41] hover:border-[#EF9E41] hover:-translate-y-1 transition-all duration-300"
+                  aria-label="Facebook"
+                >
+                  <Icon icon="mdi:facebook" width="20" height="20" />
+                </a>
+                <a
+                  href="#"
+                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#EF9E41] hover:border-[#EF9E41] hover:-translate-y-1 transition-all duration-300"
+                  aria-label="LinkedIn"
+                >
+                  <Icon icon="mdi:linkedin" width="20" height="20" />
+                </a>
+              </div>
             </div>
+
+            {/* Address */}
+            <div>
+              <h3 className="text-[#EF9E41] font-bold text-lg mb-4">
+                Office Address
+              </h3>
+              <div className="flex items-start gap-3 text-gray-400 text-sm leading-relaxed">
+                <Icon
+                  icon="mdi:map-marker"
+                  className="w-5 h-5 shrink-0 text-[#EF9E41] mt-0.5"
+                />
+                <div>
+                  <p className="font-medium text-white mb-1">
+                    Landwala Headquarters
+                  </p>
+                  <p>H.NO: 1-70, New Vasavi Residency,</p>
+                  <p>Chaitanyapuri Colony, Saroornagar,</p>
+                  <p>K.V Rangareddy - 500060, Telangana</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-medium">
+          <p>© 2025 LANDWALA PRIVATE LIMITED | All Rights Reserved</p>
+          <div className="flex gap-6">
+            <Link href="#" className="hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="#" className="hover:text-white transition-colors">
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>
